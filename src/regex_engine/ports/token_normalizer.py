@@ -1,0 +1,6 @@
+from typing import Protocol
+
+
+class TokenNormalizer(Protocol):
+    async def stem(self, word: str) -> str: ...
+    async def inflect(self, stem: str) -> list[str]: ...
