@@ -9,6 +9,10 @@ def _is_empty(word:str) -> bool:
     return False
 
 
+def _normalize_stem(stem:str):
+    return "_".join(stem.split())
+
+
 @dataclass(eq=False)
 class RegexEntry:
     _stem: str
@@ -18,9 +22,19 @@ class RegexEntry:
     def __init__(self, stem:str, variants:Iterable[str]):
         if _is_empty(stem):
             raise ValueError(f"stem {stem} cannot be empty")
-        self._stem = stem
+        self._stem = _normalize_stem(stem)
         self._variants = set(variants)
         self._compile()
+
+    def _compile(self) -> None:
+        alts = "|".join(
+            re.escape(v) for v in sorted(self.variants, key=len, reverse=True)
+        )
+
+        self._pattern = re.compile(
+            rf"\b(?:{alts})\b",
+            re.IGNORECASE | re.UNICODE,
+        )
 
     @property
     def stem(self):
@@ -37,27 +51,12 @@ class RegexEntry:
     def contains(self, text: str) -> bool:
         return bool(self._pattern.search(text))
 
-    def find(self, text: str) -> str | None:
-        m = self._pattern.search(text)
-        return m.group(0) if m else None
+    def find(self, text: str) -> list[str]:
+        return [m.group(0) for m in self._pattern.finditer(text)]
 
-    def find_span(self, text:str) -> tuple[int, int] | None:
-        m = self._pattern.search(text)
-        return (m.start(), m.end()) if m else None
+    def find_spans(self, text: str) -> list[tuple[int, int]]:
+        return [(m.start(), m.end()) for m in self._pattern.finditer(text)]
 
-
-    def _compile(self) -> None:
-        if not self.variants:
-            self.variants.add(self.stem)
-
-        alts = "|".join(
-            re.escape(v) for v in sorted(self.variants, key=len, reverse=True)
-        )
-
-        self._pattern = re.compile(
-            rf"\b(?:{alts})\b",
-            re.IGNORECASE | re.UNICODE,
-        )
 
     def add_variant(self, variant: str) -> None:
         variant = variant.strip()
@@ -73,10 +72,6 @@ class RegexEntry:
     def remove_variant(self, variant: str) -> None:
         variant = variant.strip()
         if not variant:
-            return
-
-        # nie pozwalamy usunąć bazy
-        if variant == self.stem:
             return
 
         if variant not in self.variants:

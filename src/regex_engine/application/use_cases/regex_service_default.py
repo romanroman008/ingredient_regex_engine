@@ -1,11 +1,12 @@
 import logging
-from pathlib import Path
 
 from regex_engine.src.regex_engine.domain.enums import RegexKind, EnsureStatus
 from regex_engine.src.regex_engine.domain.models.orchestrator import EnsureWordResult
 
+from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
+
 from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
-from regex_engine.src.regex_engine.ports.regex_registry import RegexRegistryReader, RegexRegistryWriter
+
 from regex_engine.src.regex_engine.ports.token_normalizer import TokenNormalizer
 
 logger = logging.getLogger("regex_service")

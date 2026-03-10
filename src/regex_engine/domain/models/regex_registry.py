@@ -60,7 +60,7 @@ class RegexRegistry:
             if not matching:
                 continue
 
-            length = len(matching)
+            length = len(matching[0])
 
             if length > best_len:
                 best = entry
@@ -75,11 +75,11 @@ class RegexRegistry:
         best_end = None
 
         for entry in self._entries:
-            span =  entry.find_span(text)
+            span =  entry.find_spans(text)
             if not span:
                 continue
 
-            start, end = span
+            start, end = span[0]
             length = end - start
 
             if length > best_len:
@@ -91,7 +91,10 @@ class RegexRegistry:
         if best is None:
             return text
 
-        return text[:best_start] + replacement + text[best_end:]
+        swapped = text[:best_start] + replacement + text[best_end:]
+
+        return self.swap_match(swapped, replacement)
+
 
     def get(self, stem: str) -> Optional[RegexEntry]:
         return self._by_stem.get(stem)

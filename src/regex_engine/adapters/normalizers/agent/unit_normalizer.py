@@ -78,7 +78,7 @@ unit_inflector_agent = Agent(
 )
 
 
-class UnitNormalizer:
+class AgentUnitNormalizer:
     async def stem(self, unit: str) -> str:
         with trace(f"Unit Stem {unit}"):
             result = await asyncio.wait_for(

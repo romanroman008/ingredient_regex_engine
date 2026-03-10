@@ -1,15 +1,51 @@
 import asyncio
 import logging
 
-from regex_engine.src.regex_engine.adapters.models import ParsedIngredient
+from regex_engine.src.regex_engine.application.dto import ParsedIngredient
 from regex_engine.src.regex_engine.domain.enums import RegexKind
 from regex_engine.src.regex_engine.domain.errors import NameNotDetectedError
+from regex_engine.src.regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
 from regex_engine.src.regex_engine.ports.regex_registry import RegexRegistryRepository
 from regex_engine.src.regex_engine.ports.regex_service import RegexService
-from regex_engine.src.regex_engine.domain.models import EnsureIngredientResult, EnsureWordResult
+
 
 logger = logging.getLogger("regex_orchestrator")
 
+
+def _build_ensure_output(ensure_results: list[EnsureWordResult], raw_input: str) -> EnsureIngredientResult:
+    by_kind = {r.kind: r for r in ensure_results}
+    name = by_kind[RegexKind.INGREDIENT_NAME]
+
+    return EnsureIngredientResult(raw_input=raw_input, name=name, items=by_kind)
+
+
+def _log_ensure_items(items: list[EnsureWordResult], *, context: str) -> None:
+    for item in items:
+        status, stem = item.status, item.stem
+
+        logger.info("[%s] %s=%s -> %s (stem: %s)",
+                    context, item.kind, item.word, status.name, stem
+                    )
+
+
+def _build_ensure_plan(ingredient: ParsedIngredient) -> dict[RegexKind, str]:
+    if not ingredient.name:
+        raise NameNotDetectedError(ingredient=ingredient.raw_input)
+
+    plan = {}
+    for field, kind in FIELD_TO_KIND:
+        value = getattr(ingredient, field)
+        if value:
+            plan[kind] = value
+
+    return plan
+
+FIELD_TO_KIND = (
+    ("unit_size", RegexKind.UNIT_SIZE),
+    ("unit", RegexKind.UNIT),
+    ("condition", RegexKind.INGREDIENT_CONDITION),
+    ("name", RegexKind.INGREDIENT_NAME),
+)
 
 class RegexOrchestratorDefault:
     def __init__(
@@ -38,43 +74,18 @@ class RegexOrchestratorDefault:
             registry = await self.repository.load(kind)
             service.registry=registry
 
+
     async def ensure_ingredient_included_in_registry(self, ingredient: ParsedIngredient) -> EnsureIngredientResult:
-        unit_size, unit, condition, name = ingredient.unit_size, ingredient.unit, ingredient.condition, ingredient.name
+        plan = _build_ensure_plan(ingredient)
 
-        tasks = []
-        if not name:
-            raise NameNotDetectedError(ingredient=ingredient.raw_input)
-
-        if unit_size:
-            tasks.append(self._ensure_word_included_in_registry(RegexKind.UNIT_SIZE, unit_size))
-
-        if unit:
-            tasks.append(self._ensure_word_included_in_registry(RegexKind.UNIT, unit))
-
-        if condition:
-            tasks.append(self._ensure_word_included_in_registry(RegexKind.INGREDIENT_CONDITION, condition))
-
-        tasks.append(
-            self._ensure_word_included_in_registry(RegexKind.INGREDIENT_NAME, name)
+        results = await asyncio.gather(
+            *(self._services[kind].ensure_word_included_in_registry(value) for kind, value in plan.items()),
         )
 
-        results = await asyncio.gather(*tasks)
-        self._log_ensure_items(results, context=ingredient.raw_input)
+        _log_ensure_items(results, context=ingredient.raw_input)
 
-        return self._build_ensure_output(results, ingredient.raw_input)
+        return _build_ensure_output(results, ingredient.raw_input)
 
 
     async def _ensure_word_included_in_registry(self, kind: RegexKind, value: str) -> EnsureWordResult:
         return await self._services[kind].ensure_word_included_in_registry(value)
-
-    def _build_ensure_output(self, ensure_results: list[EnsureWordResult], raw_input: str) -> EnsureIngredientResult:
-        name = next(r for r in ensure_results if r.kind == RegexKind.INGREDIENT_NAME)
-        return EnsureIngredientResult(raw_input=raw_input, name=name, items=ensure_results)
-
-    def _log_ensure_items(self, items: list[EnsureWordResult], *, context: str) -> None:
-        for item in items:
-            status, stem = item.status, item.stem
-
-            logger.info("[%s] %s=%s -> %s (stem: %s)",
-                        context, item.kind, item.word, status.name, stem
-                        )

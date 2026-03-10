@@ -107,7 +107,7 @@ male_adjective_inflector_agent = Agent(
 )
 
 
-class AdjectiveNormalizer:
+class AgentAdjectiveNormalizer:
     async def stem(self, word: str) -> str:
         with trace(f"Adjective Stem: {word}"):
             result = await asyncio.wait_for(

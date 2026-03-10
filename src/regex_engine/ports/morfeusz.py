@@ -1,0 +1,6 @@
+from typing import Protocol, Iterable
+
+
+class Morfeusz(Protocol):
+    def analyse(self, text: str) -> Iterable: ...
+    def generate(self, lemma: str) -> Iterable: ...

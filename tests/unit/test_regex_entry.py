@@ -7,31 +7,19 @@ from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
 class TestRegexEntryInit:
 
     @pytest.mark.parametrize(
-        "stem,variants,expected_variants",
+        "stem, expected_stem ,variants,expected_variants",
         [
-            ("mleko", ["mleko", "mleka"], {"mleko", "mleka"}),
-            ("masło", ["masło", "masła", "masła"], {"masło", "masła"}),
-            ("kakao", ["kakao"], {"kakao"}),
+            ("mleko", "mleko", ["mleko", "mleka"], {"mleko", "mleka"}),
+            ("masło","masło", ["masło", "masła", "masła"], {"masło", "masła"}),
+            ("kakao", "kakao", ["kakao"], {"kakao"}),
+            ("sok pomarańczowy","sok_pomarańczowy", ["sok pomarańczowy"], {"sok pomarańczowy"}),
+            ("sok  pomarańczowy", "sok_pomarańczowy", ["sok pomarańczowy"], {"sok pomarańczowy"}),
         ]
 
     )
-    def test_happy_path(self, stem, variants, expected_variants):
+    def test_happy_path(self, stem, expected_stem, variants, expected_variants):
         entry = RegexEntry(stem, variants)
-        assert entry._stem == stem
-        assert entry._variants == expected_variants
-
-
-    @pytest.mark.parametrize(
-        "stem,expected_variants",
-        [
-            ("mleko", {"mleko"}),
-            ("masło", {"masło"}),
-            ("kakao", {"kakao"}),
-        ]
-    )
-    def test_empty_variants(self, stem, expected_variants):
-        entry = RegexEntry(stem, {})
-        assert entry._stem == stem
+        assert entry._stem == expected_stem
         assert entry._variants == expected_variants
 
 
@@ -86,12 +74,13 @@ class TestRegexEntryFind:
     @pytest.mark.parametrize(
         "text, expected",
         [
-            ("mleko", "mleko"),
-            ("Mleko", "Mleko"),
-            ("2 mleka i masło", "mleka"),
-            ("Jedno mleko", "mleko"),
-            ("", None),
-            ("2 mleczne", None)
+            ("mleko", ["mleko"]),
+            ("Mleko", ["Mleko"]),
+            ("2 mleka i masło", ["mleka"]),
+            ("Jedno mleko", ["mleko"]),
+            ("", []),
+            ("2 mleczne", []),
+            ("2 mleka i 1 mleko", ["mleka", "mleko"])
 
         ]
     )
@@ -106,15 +95,17 @@ class TestRegexEntryFindSpan:
     @pytest.mark.parametrize(
         "text, expected",
         [
-            ("mleko", (0,5)),
-            ("2 mleka", (2, 7)),
-            ("", None),
-            ("43 masła", None),
+            ("mleko", [(0,5)]),
+            ("2 mleka", [(2, 7)]),
+            ("", []),
+            ("mleko czekoladowe i 2 mleka waniliowe", [(0,5), (22, 27)]),
+            ("43 masła", []),
+            ("43 masła", []),
         ]
     )
     def test_find_span_happy_path(self, text, expected):
         entry = RegexEntry("mleko", ["mleko", "mleka"])
-        assert entry.find_span(text) == expected
+        assert entry.find_spans(text) == expected
 
 
 class TestRegexEntryAddVariant:
@@ -154,11 +145,7 @@ class TestRegexEntryRemoveVariant:
         assert "mleka" not in entry.variants
         assert not entry.contains("mleka")
 
-    def test_remove_does_not_remove_stem(self):
-        entry = RegexEntry("mleko", ["mleko", "mleka"])
-        entry.remove_variant("mleko")
 
-        assert "mleko" in entry.variants
 
     def test_remove_ignores_non_existing_variant(self):
         entry = RegexEntry("mleko", ["mleko"])

@@ -79,7 +79,7 @@ ingredient_inflector_agent = Agent(
 
 
 
-class IngredientNameNormalizer:
+class AgentIngredientNameNormalizer:
     async def stem(self, word:str) -> str:
         with trace(f"Ingredient Name Stem: {word}"):
             result = await asyncio.wait_for(

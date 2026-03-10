@@ -15,4 +15,6 @@ class EnsureWordResult:
 class EnsureIngredientResult:
     raw_input:str
     name:EnsureWordResult
-    items:list[EnsureWordResult]
+    items:dict[RegexKind,EnsureWordResult]
+
+

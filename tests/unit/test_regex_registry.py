@@ -174,7 +174,7 @@ class TestRegexRegistryRemoveVariant:
 def entries():
     milk = _entry("mleko", ["mleko", "mleka"])
     pudding = _entry("budyń", ["budyń", "budynie", "budyniu"])
-    vanilla_pudding = _entry("budyń waniliowy", ["budyń waniliowy", "budynie waniliowe", "budyniu waniliowego"])
+    vanilla_pudding = _entry("budyń_waniliowy", ["budyń waniliowy", "budynie waniliowe", "budyniu waniliowego"])
     cocoa = _entry("kakao", ["kakao"])
     return {
         "milk": milk,
@@ -229,6 +229,7 @@ class TestRegexRegistrySwapMatch:
             ("karmel", "karmel"),
             ("5 lasek wanilii", "5 lasek wanilii"),
             ("5 łyżek budyniu wanilinowego i 2 łyżki budyniu waniliowego", "5 łyżek SWAP wanilinowego i 2 łyżki SWAP"),
+            ("5 łyżek budyniu i 4 łyżki budyniu waniliowego", "5 łyżek SWAP i 4 łyżki SWAP"),
         ],
     )
     def test_match_best_returns_value(self, registry, entries, text, expected):
