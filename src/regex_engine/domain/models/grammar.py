@@ -18,6 +18,11 @@ class GrammaticalNumber(StrEnum):
     SINGULAR = "sg"
     PLURAL = "pl"
 
+class GradationDegree(StrEnum):
+    POSITIVE = "pos"
+    COMPARATIVE = "com"
+    SUPERLATIVE = "sup"
+
 class GrammaticalCase(StrEnum):
     NOMINATIVE = "nom"      # mianownik
     GENITIVE = "gen"        # dopełniacz
@@ -34,12 +39,4 @@ class GrammaticalGender(StrEnum):
     FEMININE = "f"  # żeński
     NEUTER = "n" #nijaki
 
-@dataclass(frozen=True, slots=True)
-class Word:
-    raw: str
-    lemma: str
-    position: int
-    part: SentencePart
-    case:Optional[GrammaticalCase] = None
-    number: Optional[GrammaticalNumber] = None
-    gender: Optional[GrammaticalGender] = None
+
