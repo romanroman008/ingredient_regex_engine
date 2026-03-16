@@ -6,7 +6,7 @@ from typing import Iterable, Optional, Sequence
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_noun_personal_masculine_only, \
     is_noun_former, is_noun_colloquial, extract_sentence_parts, is_noun_contemptuous, extract_tags, get_index, \
     is_noun_inflectionally_independent, extract_cases, extract_genders, extract_numbers, extract_gradation, \
-    is_pluralia_tantum, get_surface
+    is_pluralia_tantum, get_surface, get_analysis_by_index
 from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase, \
     GrammaticalGender, GradationDegree
 from regex_engine.src.regex_engine.ports.morfeusz import Morfeusz

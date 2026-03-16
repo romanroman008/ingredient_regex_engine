@@ -8,6 +8,7 @@ class ParsedIngredient(BaseModel):
     unit:str
     condition:str
     name:str
+    extra:str
 
 
 

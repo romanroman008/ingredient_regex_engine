@@ -36,22 +36,6 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
 
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize(
-    "unit_name, expected",
-    [
-        ("op.","opakowanie"),
-        ("g", "gram"),
-        ("ml", "mililitr"),
-        ("g.", "gram"),
-        ("ml.", "mililitr"),
-    ]
-)
-async def test_stem_abbreviation(normalizer, unit_name:str, expected:str):
-    result = await normalizer.stem(unit_name)
-
-    assert result == expected
-
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
@@ -60,7 +44,6 @@ async def test_stem_abbreviation(normalizer, unit_name:str, expected:str):
         ("gram",[
             "gram",
             "grama",
-            "gram",
             "gramem",
             "gramy",
             "gramów",

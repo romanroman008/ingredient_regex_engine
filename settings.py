@@ -1,10 +1,17 @@
+import os
 from pathlib import Path
 import logging
 import logging.config
 
+from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent
 OUTPUT_DIR = BASE_DIR / 'output'
+PROJECT_ROOT = BASE_DIR.parent
+
+load_dotenv(PROJECT_ROOT / ".env")
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 LOG_LEVEL = "DEBUG"
 
@@ -43,3 +50,6 @@ def configure_logging() -> None:
     logging.config.dictConfig(LOGGING)
     logging.getLogger("openai").setLevel(logging.INFO)
     logging.getLogger("httpcore").setLevel(logging.INFO)
+
+
+
