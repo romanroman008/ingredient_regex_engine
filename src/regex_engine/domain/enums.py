@@ -6,6 +6,7 @@ class EnsureStatus(Enum):
     UPDATED_EXISTING = auto()
     CREATED_NEW = auto()
     SKIPPED_EMPTY = auto()
+    FAILED = auto()
 
 class RegexKind(Enum):
     UNIT_SIZE = auto()

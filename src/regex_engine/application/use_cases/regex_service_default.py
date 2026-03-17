@@ -39,6 +39,7 @@ class RegexServiceDefault:
         """
         Chyba bedzie trzeba otoczyc cale trycatchem, a z normalizerow rzucac wyjatki
         """
+
         if not self.registry:
             raise RuntimeError("Registry is not set for kind: %s" % self.kind)
 

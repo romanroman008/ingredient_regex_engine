@@ -11,6 +11,7 @@ class EnsureWordResult:
     word:str
 
 
+
 @dataclass(slots=True, frozen=True)
 class EnsureIngredientResult:
     raw_input:str

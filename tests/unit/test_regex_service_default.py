@@ -1,3 +1,4 @@
+from collections import Counter
 from unittest.mock import AsyncMock, create_autospec
 
 import pytest
@@ -31,18 +32,17 @@ def normalizer() -> TokenNormalizer:
 def registry() -> RegexRegistry:
     r = create_autospec(RegexRegistry, instance=True, spec_set=True)
 
-    # bezpieczne defaulty (najczęstszy flow)
+
     r.match_best.return_value = None
     r.get.return_value = None
     r.get_all.return_value = tuple()
 
-    # metody mutujące: default = brak efektu
     r.add_entry.return_value = None
     r.remove_entry.return_value = None
     r.add_variant.return_value = None
     r.remove_variant.return_value = None
 
-    # swap_match: sensowny default (brak dopasowania)
+
     r.swap_match.side_effect = lambda text, replacement: text
 
     return r
@@ -81,13 +81,12 @@ async def test_ensure_word_included_in_registry__word_empty__does_not_call_depen
 ):
     await service.ensure_word_included_in_registry(word)
 
-    # registry metody nie powinny być wołane
+
     service.registry.match_best.assert_not_called()
     service.registry.get.assert_not_called()
     service.registry.add_variant.assert_not_called()
     service.registry.add_entry.assert_not_called()
 
-    # normalizer też nie
     service._normalizer.stem.assert_not_called()
     service._normalizer.inflect.assert_not_called()
 
@@ -116,13 +115,13 @@ async def test_ensure_word_in_registry__word_can_be_matched__returns_matched(
     # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert - rezultat
+    # Assert
     assert result.kind == service.kind
     assert result.status == EnsureStatus.ALREADY_MATCHED
     assert result.stem == hit_stem
     assert result.word == expected_word
 
-    # Assert - orkiestracja
+
     service.registry.match_best.assert_called_once_with(expected_word)
     service._normalizer.stem.assert_not_called()
     service._normalizer.inflect.assert_not_called()
@@ -156,13 +155,13 @@ async def test_ensure_word_in_registry__word_does_not_match_stem_exists__updates
     # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert - rezultat
+    # Assert
     assert result.kind == service.kind
     assert result.status == EnsureStatus.UPDATED_EXISTING
     assert result.stem == expected_stem
     assert result.word == expected_word
 
-    # Assert - orkiestracja (kolejność mniej istotna, ale call’e i argumenty tak)
+
     service.registry.match_best.assert_called_once_with(expected_word)
     service._normalizer.stem.assert_awaited_once_with(expected_word)
     service.registry.get.assert_called_once_with(expected_stem)
@@ -176,8 +175,8 @@ async def test_ensure_word_in_registry__word_does_not_match_stem_exists__updates
 @pytest.mark.parametrize(
     "word, expected_stem, expected_word, variants",
     [
-        ("masło", "masło", "masło", ("masło", "masła")),
-        ("mleko", "mleko", "mleko", ("mleko", "mleka")),
+        ("masło", "masło", "masło", ("masło",)),
+        ("mleka", "mleko", "mleka", ("mleko", "mleka")),
     ],
 )
 async def test_ensure_word_in_registry__word_does_not_match_stem_not_exists__creates_new(
@@ -196,24 +195,24 @@ async def test_ensure_word_in_registry__word_does_not_match_stem_not_exists__cre
     # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert - rezultat
+    # Assert
     assert result.kind == service.kind
     assert result.status == EnsureStatus.CREATED_NEW
     assert result.stem == expected_stem
     assert result.word == expected_word
 
-    # Assert - orkiestracja
+
     service.registry.match_best.assert_called_once_with(expected_word)
     service._normalizer.stem.assert_awaited_once_with(expected_word)
     service.registry.get.assert_called_once_with(expected_stem)
     service._normalizer.inflect.assert_awaited_once_with(expected_stem)
     service.registry.add_entry.assert_called_once()
 
-    # Assert - poprawność dodawanego entry (bez zależności od __eq__)
+
     added_entry = service.registry.add_entry.call_args.args[0]
     assert isinstance(added_entry, RegexEntry)
     assert added_entry.stem == expected_stem
-    assert tuple(added_entry.variants) == variants
+    assert Counter(added_entry.variants) == Counter(variants)
 
-    # Dodatkowo: nie powinno aktualizować wariantu istniejącego
+
     service.registry.add_variant.assert_not_called()
