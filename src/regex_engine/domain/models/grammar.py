@@ -5,12 +5,12 @@ from typing import Optional
 
 class SentencePart(StrEnum):
     NOUN = "subst"
-    PREPOSITION = "prep"
     ADJECTIVE = "adj"
-    CONJUNCTION = "conj"
-    ABBREVIATION = "brev"
     PASSIVE_ADJECTIVAL_PARTICIPLE = "ppas"
     ACTIVE_PARTICIPLE = "pact"
+    PREPOSITION = "prep"
+    CONJUNCTION = "conj"
+    ABBREVIATION = "brev"
     PUNCTUATION_MARK = "interp"
     UNKNOWN = "unknown"
 

@@ -5,13 +5,10 @@ from morfeusz2 import Morfeusz
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.ingredient_name import get_lemma, is_negative
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import calculate_elements, \
     get_first_adjective_analysis, extract_gradation, extract_cases, extract_numbers, get_surface, extract_genders, \
-    extract_sentence_parts, is_noun_inflectionally_independent, is_pluralia_tantum
+    extract_sentence_parts
 from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalCase, GrammaticalNumber, GrammaticalGender, \
     SentencePart
 
-
-def get_degree(adjective):
-    pass
 
 
 class MorfeuszAdjectiveNormalizer:
@@ -74,7 +71,7 @@ class MorfeuszAdjectiveNormalizer:
         phrase_analysis = self.morfeusz.analyse(stem)
 
         if calculate_elements(phrase_analysis) > 1:
-            raise ValueError("Only one adjective can be stemmed")
+            raise ValueError("Only one adjective can be inflected")
 
         adjective = get_first_adjective_analysis(phrase_analysis)
 

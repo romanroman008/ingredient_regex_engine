@@ -3,6 +3,8 @@ import re
 import string
 from typing import Iterable, Optional, Sequence
 
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related
+from regex_engine.src.regex_engine.application.dto import WordAnalysis, BaseWord
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_noun_personal_masculine_only, \
     is_noun_former, is_noun_colloquial, extract_sentence_parts, is_noun_contemptuous, extract_tags, get_index, \
     is_noun_inflectionally_independent, extract_cases, extract_genders, extract_numbers, extract_gradation, \
@@ -36,7 +38,7 @@ def reduce_non_food_subjects(phrase_analysis: Iterable[tuple]) -> list[tuple]:
     return result
 
 
-def get_all_subject_variations(phrase_analysis:Iterable[tuple]):
+def get_all_subject_variations(phrase_analysis:Iterable[WordAnalysis]):
     result = []
     subject = find_first_noun(phrase_analysis)
 
@@ -69,7 +71,7 @@ def get_right_noun_variations(phrase_analysis:Iterable[tuple], pivot:int) -> lis
 
 
 
-def find_first_noun(phrase_analysis:Iterable[tuple]) -> tuple | None:
+def find_first_noun(phrase_analysis:Iterable[WordAnalysis]) -> tuple | None:
     lowest_index = (100, None)
     for analysis in phrase_analysis:
         if (extract_tags(analysis)[0] == SentencePart.NOUN and
@@ -79,7 +81,14 @@ def find_first_noun(phrase_analysis:Iterable[tuple]) -> tuple | None:
             analysis[0] < lowest_index[0]):
             lowest_index = (get_index(analysis),analysis)
 
+    for analysis in phrase_analysis:
+        if analysis.part is SentencePart.NOUN:
+            if
+
+
     return lowest_index[1]
+
+
 
 
 
@@ -243,7 +252,7 @@ def determine_correct_right_noun(noun_variations:list[tuple], subject:tuple) -> 
     return noun_variations[0]
 
 
-def reduce_variations_to_correct_one(phrase_analysis: Sequence[tuple]) -> list[tuple]:
+def reduce_variations_to_correct_one(phrase_analysis: Sequence[WordAnalysis]) -> list[tuple]:
     subject_variations = get_all_subject_variations(phrase_analysis)
 
     if not subject_variations:
@@ -273,6 +282,13 @@ def reduce_variations_to_correct_one(phrase_analysis: Sequence[tuple]) -> list[t
     result.extend(unique_adjectives)
 
     return result
+
+def tuples_to_word_analysis(tuples:list[tuple]) -> list[WordAnalysis]:
+    return [WordAnalysis.from_tuple(t) for t in tuples]
+
+
+
+
 
 
 def split_phrase(phrase:str) -> dict[int, str]:
@@ -454,6 +470,15 @@ class MorfeuszIngredientNameNormalizer:
             numbered_phrase[index] = inflected[index]
 
         return join_tokens(numbered_phrase)
+
+
+    def stem_2(self, phrase: str) -> str:
+        phrase_analysis = self.morfeusz.analyse(phrase)
+
+        numbered_phrase = split_phrase(phrase)
+
+        word_analysis = tuples_to_word_analysis(phrase_analysis)
+
 
 
 

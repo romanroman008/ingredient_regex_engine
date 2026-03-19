@@ -47,3 +47,7 @@ class IngredientParsingError(Exception):
             )
 
         return " | ".join(parts)
+
+
+class WordAnalysisParseError(ValueError):
+    pass

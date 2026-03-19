@@ -1,3 +1,5 @@
+from typing import Counter
+
 import pytest
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.unit_normalizer import MorfeuszUnitNormalizer
@@ -52,9 +54,7 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
         ("opakowanie", [
             "opakowanie",
             "opakowania",
-            "opakowanie",
             "opakowaniem",
-            "opakowania",
             "opakowań",
             "opakowaniami"
         ]),
@@ -63,7 +63,6 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
             "paczki",
             "paczkę",
             "paczką",
-            "paczki",
             "paczek",
             "paczkami"
         ]),
@@ -72,14 +71,12 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
             "szczypty",
             "szczyptę",
             "szczyptą",
-            "szczypty",
             "szczypt",
             "szczyptami"
         ]),
         ("mililitr", [
             "mililitr",
             "mililitra",
-            "mililitr",
             "mililitrem",
             "mililitry",
             "mililitrów",
@@ -89,6 +86,6 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
 )
 async def test_inflect_happy_path(normalizer, unit_name:str, expected:list[str]):
     result = await normalizer.inflect(unit_name)
-    assert result == expected
+    assert Counter(result) == Counter(expected)
 
 

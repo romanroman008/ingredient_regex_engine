@@ -88,6 +88,6 @@ class MorfeuszUnitNormalizer:
 
                     results.append(get_surface((0,0,variation)))
 
-        return results
+        return list(set(results))
 
 
