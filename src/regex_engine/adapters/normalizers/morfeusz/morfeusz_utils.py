@@ -1,7 +1,9 @@
 import logging
+import re
+import string
 from typing import Iterable, Optional, Sequence
 
-from regex_engine.src.regex_engine.application.dto import BaseWord, WordAnalysis
+from regex_engine.src.regex_engine.application.dto import BaseWord, WordAnalysis, GeneratedWord
 from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalGender, SentencePart
 
 
@@ -159,6 +161,9 @@ def filter_non_cooking_related(analysis:Sequence[WordAnalysis]) -> list[WordAnal
 def tuples_to_word_analysis(tuples:list[tuple]) -> list[WordAnalysis]:
     return [WordAnalysis.from_tuple(t) for t in tuples]
 
+def tuples_to_generated_word(tuples:list[tuple]) -> list[GeneratedWord]:
+    return [GeneratedWord.from_tuple(t) for t in tuples]
+
 
 def is_word_cooking_related(word:BaseWord) -> bool:
     return not (is_word_colloquial(word) and
@@ -171,6 +176,7 @@ def is_word_inflectionally_independent(word:BaseWord) -> bool:
     return ('niezal.' in word.annotations
             or len(word.case) == 7
             )
+
 
 def is_word_former(word:BaseWord) -> bool:
     return 'daw.' in word.annotations
@@ -186,6 +192,22 @@ def is_word_masculine_personal_only(word:BaseWord) -> bool:
             len(word.gender) == 1
             and word.gender is GrammaticalGender.MASC_PERSONAL
             )
+
+def split_phrase(phrase:str) -> dict[int, str]:
+    tokens = re.findall(r"\w+|[^\w\s]", phrase)
+    return {i: v for i, v in enumerate(tokens)}
+
+def join_tokens(tokens: dict) -> str:
+    result = []
+    punct = set(string.punctuation)
+
+    for token in tokens.values():
+        if result and token not in punct:
+            result.append(" ")
+        result.append(token)
+
+    return "".join(result)
+
 
 
 

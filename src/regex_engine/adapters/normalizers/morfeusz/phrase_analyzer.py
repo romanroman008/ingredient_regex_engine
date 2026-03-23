@@ -1,38 +1,46 @@
 import logging
 from typing import Optional, Sequence
 
+
 from morfeusz2 import Morfeusz
 
-from regex_engine.adapters.normalizers.morfeusz.ingredient_name import split_phrase, join_tokens
+from regex_engine.src.regex_engine.adapters.normalizers.dump.ingredient_name import split_phrase, join_tokens
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non_cooking_related, \
     is_word_inflectionally_independent
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.ingredient_name import get_all_subject_variations
+
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related, \
     tuples_to_word_analysis
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart
-from regex_engine.src.regex_engine.application.dto import WordAnalysis
+from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalCase, GrammaticalNumber, \
+    GrammaticalGender
+from regex_engine.src.regex_engine.application.dto import WordAnalysis, AnalysedPhrase, PositionedWord
 
 logger = logging.getLogger("phrase_analyzer")
 
-class PhraseAnalyzer:
+class PhraseAnalyser:
     def __init__(self, morfeusz:Morfeusz):
         self.morfeusz = morfeusz
+
         self._numbered_phrase:dict[int, str] = {}
         self._phrase_analysis: list[WordAnalysis] = []
 
-        self._subject_index_start: int = -1
-        self._subject_index_end:int = -1
+        self._subject_index: int = -1
         self._subject:Optional[WordAnalysis] = None
         self._subject_variations:list[WordAnalysis] = []
+
+        self._subject_related_adjectives: list[WordAnalysis] = []
+        self._subject_related_adjectives_variations: list[WordAnalysis] = []
 
         self._dependent_noun: Optional[WordAnalysis] = None
         self._dependent_noun_variations: list[WordAnalysis] = []
 
-        self._related_adjectives:list[WordAnalysis] = []
-        self._related_adjectives_variations:list[WordAnalysis] = []
+        self._dependent_noun_related_adjectives: list[WordAnalysis] = []
+        self._dependent_noun_related_adjectives_variations: list[WordAnalysis] = []
 
-    def inflect(self, phrase:str):
+
+
+
+    def analyse(self, phrase:str) -> AnalysedPhrase:
         phrase_analysis = self.morfeusz.analyse(phrase)
 
         self._numbered_phrase = split_phrase(phrase)
@@ -42,23 +50,76 @@ class PhraseAnalyzer:
         self._phrase_analysis = filter_non_cooking_related(word_analysis)
 
         subject_index = self._find_first_noun_index()
-        self._subject_index_start = subject_index
-        self._subject_index_end = subject_index
+        self._subject_index= subject_index
 
         self._subject_variations = self._get_word_analysis_by_index(subject_index)
 
         self._dependent_noun_variations = self._get_dependent_noun_variations()
 
-        self._related_adjectives_variations = self._get_subject_related_adjectives()
+        if self._dependent_noun_variations:
+            self._subject_related_adjectives_variations = self._get_related_adjectives(subject_index, -1)
+            self._dependent_noun_related_adjectives_variations = self._get_related_adjectives(subject_index + 1, 1)
 
-        self._subject = self._determine_correct_subject()
+            subject = self._determine_correct_subject()
+            self._subject = subject
+            dependent_noun = self._determine_correct_dependent_noun()
+            self._dependent_noun = dependent_noun
 
-        self._dependent_noun = self._determine_correct_dependent_noun()
+            if self._subject_related_adjectives_variations:
+                self._subject_related_adjectives = self._determine_subject_related_adjectives()
 
-        self._related_adjectives =
+            if self._dependent_noun_related_adjectives_variations:
+                self._dependent_noun_related_adjectives = self._determine_dependent_noun_related_adjectives()
+
+        else:
+            self._subject_related_adjectives = self._get_related_adjectives(subject_index, -1) + self._get_related_adjectives(subject_index, 1)
+            self._subject = self._determine_correct_subject()
+
+        analysed_phrase =  self._create_analysed_phrase()
+        self._clear()
+
+        return analysed_phrase
 
 
-    def _determine_correct_dependend
+
+    def _clear(self):
+        self._numbered_phrase: dict[int, str] = {}
+        self._phrase_analysis: list[WordAnalysis] = []
+
+        self._subject_index: int = -1
+        self._subject: Optional[WordAnalysis] = None
+        self._subject_variations: list[WordAnalysis] = []
+
+        self._subject_related_adjectives: list[WordAnalysis] = []
+        self._subject_related_adjectives_variations: list[WordAnalysis] = []
+
+        self._dependent_noun: Optional[WordAnalysis] = None
+        self._dependent_noun_variations: list[WordAnalysis] = []
+
+        self._dependent_noun_related_adjectives: list[WordAnalysis] = []
+        self._dependent_noun_related_adjectives_variations: list[WordAnalysis] = []
+
+    def _create_analysed_phrase(self):
+        n_subject = PositionedWord(self._subject.position, self._subject)
+        n_dependent_noun = None
+        n_subject_adjectives = []
+        n_dependent_noun_adjectives = []
+        if self._dependent_noun:
+            n_dependent_noun = PositionedWord(self._dependent_noun.position, self._dependent_noun)
+            for adjective in self._dependent_noun_related_adjectives:
+                n_dependent_noun_adjectives.append(PositionedWord(adjective.position, adjective))
+        for subj_adj in self._subject_related_adjectives:
+            n_subject_adjectives.append(PositionedWord(subj_adj.position, subj_adj))
+
+
+
+        return AnalysedPhrase(subject=n_subject,
+                              dependent_noun=n_dependent_noun,
+                              subject_adjectives=n_subject_adjectives,
+                              dependent_noun_adjectives=n_dependent_noun_adjectives,
+                              phrase=self._numbered_phrase
+                              )
+
 
 
     def _determine_correct_dependent_noun(self):
@@ -118,7 +179,8 @@ class PhraseAnalyzer:
 
         return self._subject_variations[0]
 
-    def _get_subject_related_adjectives(self):
+
+    def _get_related_adjectives(self, index:int, direction:int):
         allowed_parts = {
             SentencePart.ADJECTIVE.value,
             SentencePart.PASSIVE_ADJECTIVAL_PARTICIPLE.value,
@@ -127,36 +189,34 @@ class PhraseAnalyzer:
             SentencePart.PUNCTUATION_MARK.value,
             SentencePart.CONJUNCTION.value,
         }
+        result: list[WordAnalysis] = []
 
-        def _collect(direction: int) -> list[WordAnalysis]:
-            result: list[WordAnalysis] = []
+        if direction not in (-1, 1):
+            raise ValueError("direction must be -1 or 1")
 
-            if direction not in (-1, 1):
-                raise ValueError("direction must be -1 or 1")
+        if direction == 1:
+            start = index + 1
+            stop = len(self._numbered_phrase)
+        else:
+            start = index - 1
+            stop = -1
 
-            if direction == 1:
-                start = self._subject_index_end + 1
-                stop = len(self._numbered_phrase)
-            else:
-                start = self._subject_index_start - 1
-                stop = -1
+        for index in range(start, stop, direction):
+            variations = self._get_word_analysis_by_index(index)
+            parts = {variation.part for variation in variations}
 
-            for index in range(start, stop, direction):
-                variations = self._get_word_analysis_by_index(index)
-                parts = {variation.part for variation in variations}
+            result.extend(
+                variation
+                for variation in variations
+                if variation.part in allowed_parts
+            )
 
-                result.extend(
-                    variation
-                    for variation in variations
-                    if variation.part in allowed_parts
-                )
+            if not (parts & allowed_parts or parts & bridge_parts):
+                break
 
-                if not (parts & allowed_parts or parts & bridge_parts):
-                    break
+        return result
 
-            return result
 
-        return _collect(-1) + _collect(1)
 
 
     def _get_subject_index(self) -> int:

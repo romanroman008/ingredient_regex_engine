@@ -40,3 +40,5 @@ class GrammaticalGender(StrEnum):
     NEUTER = "n" #nijaki
 
 
+
+

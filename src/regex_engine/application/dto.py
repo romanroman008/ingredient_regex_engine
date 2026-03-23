@@ -1,9 +1,10 @@
-
+from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Optional
 
 from pydantic import BaseModel
 
+from regex_engine.adapters.normalizers.dump.ingredient_name import join_tokens
 from regex_engine.src.regex_engine.domain.models.grammar import GradationDegree, GrammaticalCase
 from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalGender
 
@@ -28,6 +29,7 @@ class BaseWord:
     surface: str
     part: SentencePart
     is_negation:bool
+    is_pluralia_tantum:bool = False
     number: set[GrammaticalNumber] = field(default_factory=set)
     case: set[GrammaticalCase] = field(default_factory=set)
     gender: set[GrammaticalGender] = field(default_factory=set)
@@ -61,6 +63,7 @@ class WordAnalysis(BaseWord):
         surface: str,
         part: SentencePart,
         is_negation: bool = False,
+        is_pluralia_tantum = False,
         number: Optional[set[GrammaticalNumber]] = None,
         case: Optional[set[GrammaticalCase]] = None,
         gender: Optional[set[GrammaticalGender]] = None,
@@ -73,6 +76,7 @@ class WordAnalysis(BaseWord):
             surface=surface,
             part=part,
             is_negation=is_negation,
+            is_pluralia_tantum=is_pluralia_tantum,
             number=number or set(),
             case=case or set(),
             gender=gender or set(),
@@ -112,6 +116,9 @@ class WordAnalysis(BaseWord):
         if part in (SentencePart.PASSIVE_ADJECTIVAL_PARTICIPLE, SentencePart.ACTIVE_PARTICIPLE):
             base["is_negation"] = "neg" in tags
 
+        if part is SentencePart.NOUN:
+            base["is_pluralia_tantum"] = "pt" in tags
+
         if part is SentencePart.ADJECTIVE:
             degree_values = cls._split_tag(morph_tag, 4)
             base["degree"] = GradationDegree(degree_values[0]) if degree_values else None
@@ -128,6 +135,7 @@ class GeneratedWord(BaseWord):
             surface: str,
             part: SentencePart,
             is_negation:bool = False,
+            is_pluralia_tantum=False,
             number: Optional[set[GrammaticalNumber]] = None,
             case: Optional[set[GrammaticalCase]] = None,
             gender: Optional[set[GrammaticalGender]] = None,
@@ -139,6 +147,7 @@ class GeneratedWord(BaseWord):
             surface=surface,
             part=part,
             is_negation=is_negation,
+            is_pluralia_tantum=is_pluralia_tantum,
             number=number or set(),
             case=case or set(),
             gender=gender or set(),
@@ -176,9 +185,38 @@ class GeneratedWord(BaseWord):
         if part in (SentencePart.PASSIVE_ADJECTIVAL_PARTICIPLE, SentencePart.ACTIVE_PARTICIPLE):
             base["is_negation"] = "neg" in tags
 
+        if part is SentencePart.NOUN:
+            base["is_pluralia_tantum"] = "pt" in tags
+
         if part is SentencePart.ADJECTIVE:
             degree_values = cls._split_tag(morph_tag, 4)
             base["degree"] = GradationDegree(degree_values[0]) if degree_values else None
 
         return cls._build(**base)
+
+
+@dataclass(slots=True)
+class PositionedWord:
+    position: int
+    word: BaseWord
+
+
+
+@dataclass(frozen=True)
+class AnalysedPhrase:
+    subject:PositionedWord
+    phrase: dict[int, str]
+    dependent_noun:Optional[PositionedWord] = None
+    subject_adjectives:list[PositionedWord] = field(default_factory=list)
+    dependent_noun_adjectives:list[PositionedWord] = field(default_factory=list)
+
+
+
+
+
+
+
+
+
+
 
