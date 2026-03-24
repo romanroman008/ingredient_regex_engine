@@ -1,4 +1,5 @@
 import logging
+from collections import defaultdict
 from typing import Optional, Sequence
 
 
@@ -15,6 +16,8 @@ from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, Gr
 from regex_engine.src.regex_engine.application.dto import WordAnalysis, AnalysedPhrase, PositionedWord
 
 logger = logging.getLogger("phrase_analyzer")
+
+
 
 class PhraseAnalyser:
     def __init__(self, morfeusz:Morfeusz):
@@ -40,6 +43,22 @@ class PhraseAnalyser:
 
 
     def analyse(self, phrase:str) -> AnalysedPhrase:
+
+        self._prepare(phrase)
+        self._prepare_subject_variations()
+        self._prepare_dependent_noun_variations()
+        self._prepare_subject_related_adjectives()
+        self._prepare_dependent_noun_related_adjectives()
+        self._determine_correct_subject()
+        self._determine_correct_dependent_noun()
+        self._determine_subject_related_adjectives()
+        self._determine_dependent_noun_adjectives()
+        analysed_phrase =  self._create_analysed_phrase()
+        self._clear()
+
+        return analysed_phrase
+
+    def _prepare(self, phrase:str):
         phrase_analysis = self.morfeusz.analyse(phrase)
 
         self._numbered_phrase = split_phrase(phrase)
@@ -49,101 +68,96 @@ class PhraseAnalyser:
         self._phrase_analysis = filter_non_cooking_related(word_analysis)
 
         subject_index = self._find_first_noun_index()
-        self._subject_index= subject_index
+        self._subject_index = subject_index
 
-        self._subject_variations = self._get_word_analysis_by_index(subject_index)
+    def _prepare_subject_variations(self):
+        if self._subject_index == -1:
+            raise ValueError("Subject index is undefined")
+        self._subject_variations = self._get_word_analysis_by_index(self._subject_index)
 
-        self._dependent_noun_variations = self._get_dependent_noun_variations()
 
+    def _prepare_dependent_noun_variations(self):
+        right_neighbour_variations = self._get_word_analysis_by_index(self._subject_index + 1)
+        self._dependent_noun_variations = [word for word in right_neighbour_variations if word.part == SentencePart.NOUN.value]
+
+    def _prepare_subject_related_adjectives(self):
         if self._dependent_noun_variations:
-            self._subject_related_adjectives_variations = self._get_related_adjectives(subject_index, -1)
-            self._dependent_noun_related_adjectives_variations = self._get_related_adjectives(subject_index + 1, 1)
-
-            subject = self._determine_correct_subject()
-            self._subject = subject
-            dependent_noun = self._determine_correct_dependent_noun()
-            self._dependent_noun = dependent_noun
-
-            if self._subject_related_adjectives_variations:
-                self._subject_related_adjectives = self._determine_subject_related_adjectives()
-
-            if self._dependent_noun_related_adjectives_variations:
-                self._dependent_noun_related_adjectives = self._determine_dependent_noun_related_adjectives()
-
+            self._subject_related_adjectives_variations = self._get_related_adjectives(self._subject_index, -1)
         else:
-            self._subject_related_adjectives = self._get_related_adjectives(subject_index, -1) + self._get_related_adjectives(subject_index, 1)
-            self._subject = self._determine_correct_subject()
-
-        analysed_phrase =  self._create_analysed_phrase()
-        self._clear()
-
-        return analysed_phrase
+            self._subject_related_adjectives_variations = self._get_related_adjectives(self._subject_index, -1)
+            self._subject_related_adjectives_variations.update(self._get_related_adjectives(self._subject_index, 1))
 
 
-
-    def _clear(self):
-        self._numbered_phrase: dict[int, str] = {}
-        self._phrase_analysis: list[WordAnalysis] = []
-
-        self._subject_index: int = -1
-        self._subject: Optional[WordAnalysis] = None
-        self._subject_variations: list[WordAnalysis] = []
-
-        self._subject_related_adjectives: list[WordAnalysis] = []
-        self._subject_related_adjectives_variations: list[WordAnalysis] = []
-
-        self._dependent_noun: Optional[WordAnalysis] = None
-        self._dependent_noun_variations: list[WordAnalysis] = []
-
-        self._dependent_noun_related_adjectives: list[WordAnalysis] = []
-        self._dependent_noun_related_adjectives_variations: list[WordAnalysis] = []
-
-    def _create_analysed_phrase(self):
-        n_subject = PositionedWord(self._subject.position, self._subject)
-        n_dependent_noun = None
-        n_subject_adjectives = []
-        n_dependent_noun_adjectives = []
-        if self._dependent_noun:
-            n_dependent_noun = PositionedWord(self._dependent_noun.position, self._dependent_noun)
-            for adjective in self._dependent_noun_related_adjectives:
-                n_dependent_noun_adjectives.append(PositionedWord(adjective.position, adjective))
-        for subj_adj in self._subject_related_adjectives:
-            n_subject_adjectives.append(PositionedWord(subj_adj.position, subj_adj))
+    def _prepare_dependent_noun_related_adjectives(self):
+        if not self._dependent_noun_variations:
+            return
+        self._dependent_noun_related_adjectives = self._get_related_adjectives(self._subject_index + 1, 1)
 
 
+    def _determine_correct_subject(self):
+        if len(self._subject_variations) == 1:
+            self._subject = self._subject_variations[0]
+            return
 
-        return AnalysedPhrase(subject=n_subject,
-                              dependent_noun=n_dependent_noun,
-                              subject_adjectives=n_subject_adjectives,
-                              dependent_noun_adjectives=n_dependent_noun_adjectives,
-                              phrase=self._numbered_phrase
-                              )
+        for variation in self._subject_variations:
+            if is_word_inflectionally_independent(variation):
+                self._subject = variation
+                return
+
+        def _matches_adjective(subject, adjective):
+            return (subject.gender & adjective.gender and
+                    subject.case & adjective.case and
+                    subject.number & adjective.number)
+
+        if self._subject_related_adjectives_variations:
+            subject_combinations = defaultdict(int)
+
+            for subject_variation in self._subject_variations:
+                for adjective_variations in self._subject_related_adjectives_variations.values():
+                    for adjective_variation in adjective_variations:
+                        if _matches_adjective(subject_variation, adjective_variation):
+                            subject_combinations[subject_variation] += 1
+                            break
+
+            self._subject = max(subject_combinations, key=subject_combinations.get)
+            return
+
+        self._subject = self._subject_variations[0]
 
 
 
     def _determine_correct_dependent_noun(self):
-        result = []
-        if not self._subject_variations:
-            return None
+        if not self._dependent_noun_variations:
+            return
 
         if len(self._dependent_noun_variations) == 1:
-            return self._dependent_noun_variations[0]
+            self._dependent_noun = self._dependent_noun_variations[0]
+            return
 
-        for variant in self._dependent_noun_variations:
-            if variant.number & self._subject.number:
-                result.append(variant)
+        for variation in self._dependent_noun_variations:
+            if is_word_inflectionally_independent(variation):
+                self._dependent_noun = variation
 
-        if not result:
-            logger.warning("Could not determine proper dependent noun variation: %s", self._subject)
-            logger.warning("Returning first one: %s", self._dependent_noun_variations[0])
-            return self._dependent_noun_variations[0]
+        def _matches_adjective(noun, adjective):
+            return (noun.gender & adjective.gender and
+                    noun.case & adjective.case and
+                    noun.number & adjective.number)
 
-        if len(result) > 1:
-            logger.warning("Found multiple dependent nouns: %s", result)
-            logger.warning("Returning first one: %s", result[0])
+        if self._dependent_noun_related_adjectives_variations:
+            noun_combinations = defaultdict(int)
 
+            for noun_variation in self._dependent_noun_variations:
+                for adjective_variations in self._dependent_noun_related_adjectives_variations.values():
+                    for adjective_variation in adjective_variations:
+                        if _matches_adjective(noun_variation, adjective_variation):
+                            noun_combinations[noun_variation] += 1
+                            break
 
-        return result[0]
+            self._subject = max(noun_combinations, key=noun_combinations.get)
+            return
+
+        self._dependent_noun = self._dependent_noun_variations[0]
+
 
 
     def _determine_dependent_noun_adjectives(self) -> None:
@@ -217,41 +231,48 @@ class PhraseAnalyser:
             self._subject_related_adjectives[index] = match
 
 
-    def _determine_correct_subject(self) -> WordAnalysis:
-        if len(self._subject_variations):
-            return self._subject_variations[0]
+    def _create_analysed_phrase(self) -> AnalysedPhrase:
+        n_subject = PositionedWord(self._subject.position, self._subject)
+        n_dependent_noun = None
+        n_subject_adjectives = []
+        n_dependent_noun_adjectives = []
+        if self._dependent_noun:
+            n_dependent_noun = PositionedWord(self._dependent_noun.position, self._dependent_noun)
+            for position, adjective in self._dependent_noun_related_adjectives:
+                n_dependent_noun_adjectives.append(PositionedWord(position, adjective))
 
-        for variation in self._subject_variations:
-            if is_word_inflectionally_independent(variation):
-                return variation
-
-        result = []
-
-        for subject_variation in self._subject_variations:
-            subj_genders = subject_variation.gender
-            subj_cases = subject_variation.case
-            subj_number = subject_variation.number
-
-            for adjective_variations in self._subject_related_adjectives_variations.values():
-                for variation in adjective_variations:
-                    if (subj_genders & variation.gender and
-                            subj_cases & variation.case and
-                            subj_number & variation.number):
-                        result.append(subject_variation)
-
-        if len(result) > 1:
-            logger.warning("Found multiple subject variations: %s", result)
-            logger.warning("Returning first one: %s", result[0])
-            return result[0]
-
-        if not result:
-            logger.warning("Could not determine proper subject variation: %s", self._subject_variations)
-            logger.warning("Returning first one: %s", self._subject_variations[0])
-
-        return self._subject_variations[0]
+        for position, subj_adj in self._subject_related_adjectives.items():
+            n_subject_adjectives.append(PositionedWord(position, subj_adj))
 
 
-    def _get_related_adjectives(self, index:int, direction:int):
+        return AnalysedPhrase(subject=n_subject,
+                              dependent_noun=n_dependent_noun,
+                              subject_adjectives=n_subject_adjectives,
+                              dependent_noun_adjectives=n_dependent_noun_adjectives,
+                              phrase=self._numbered_phrase
+                              )
+
+
+    def _clear(self):
+        self._numbered_phrase.clear()
+        self._phrase_analysis.clear()
+
+        self._subject_index: int = -1
+        self._subject: Optional[WordAnalysis] = None
+        self._subject_variations.clear()
+
+        self._subject_related_adjectives.clear()
+        self._subject_related_adjectives_variations.clear()
+
+        self._dependent_noun: Optional[WordAnalysis] = None
+        self._dependent_noun_variations.clear()
+
+        self._dependent_noun_related_adjectives.clear()
+        self._dependent_noun_related_adjectives_variations.clear()
+
+
+
+    def _get_related_adjectives(self, index:int, direction:int) -> dict[int,list[WordAnalysis]]:
         allowed_parts = {
             SentencePart.ADJECTIVE.value,
             SentencePart.PASSIVE_ADJECTIVAL_PARTICIPLE.value,
@@ -284,13 +305,6 @@ class PhraseAnalyser:
         return result
 
 
-    def _get_subject_index(self) -> int:
-        return self._subject_variations[0].position
-
-    def _get_dependent_noun_variations(self) -> list[WordAnalysis]:
-        right_neighbour_variations = self._get_word_analysis_by_index(self._subject_index + 1)
-        return [word for word in right_neighbour_variations if word.part == SentencePart.NOUN.value]
-
     def _find_first_noun_index(self) -> int:
         sorted_analysis = sorted(self._phrase_analysis, key=lambda w: w.position)
         for word in sorted_analysis:
@@ -300,3 +314,5 @@ class PhraseAnalyser:
 
     def _get_word_analysis_by_index(self, index: int):
         return [word for word in self._phrase_analysis if word.position == index]
+
+
