@@ -1,8 +1,9 @@
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import join_tokens
 from regex_engine.src.regex_engine.application.dto import AnalysedPhrase
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
-from regex_engine.src.regex_engine.adapters.normalizers.dump.ingredient_name import join_tokens
+
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
 from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase
@@ -42,7 +43,7 @@ class MorfeuszIngredientNameNormalizer:
         self._prepare(stem)
         result = []
         for inflection in self._inflection_variations:
-            result.append(self._inflect(inflection))
+            result.append(self._inflect(*inflection))
 
         return result
 

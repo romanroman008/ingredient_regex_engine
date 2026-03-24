@@ -1,7 +1,9 @@
 import pytest
 
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.ingredient_name import MorfeuszIngredientNameNormalizer
-from regex_engine.src.regex_engine.ports.morfeusz import Morfeusz
+
 
 pytest.importorskip("morfeusz2")
 
@@ -11,9 +13,17 @@ import morfeusz2
 def morfeusz():
     return morfeusz2.Morfeusz()
 
+@pytest.fixture(scope="session")
+def inflector(morfeusz):
+    return Inflector(morfeusz)
+
+@pytest.fixture(scope="session")
+def phrase_analyser(morfeusz):
+    return PhraseAnalyser(morfeusz)
+
 @pytest.fixture
-def normalizer(morfeusz: Morfeusz):
-    return MorfeuszIngredientNameNormalizer(morfeusz)
+def normalizer(inflector: Inflector, phrase_analyser: PhraseAnalyser):
+    return MorfeuszIngredientNameNormalizer(inflector, phrase_analyser)
 
 
 

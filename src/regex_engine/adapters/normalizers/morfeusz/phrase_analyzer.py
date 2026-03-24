@@ -4,10 +4,9 @@ from typing import Optional, Sequence
 
 from morfeusz2 import Morfeusz
 
-from regex_engine.src.regex_engine.adapters.normalizers.dump.ingredient_name import split_phrase, join_tokens
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non_cooking_related, \
-    is_word_inflectionally_independent
 
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non_cooking_related, \
+    is_word_inflectionally_independent, split_phrase, join_tokens
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related, \
     tuples_to_word_analysis
@@ -28,14 +27,14 @@ class PhraseAnalyser:
         self._subject:Optional[WordAnalysis] = None
         self._subject_variations:list[WordAnalysis] = []
 
-        self._subject_related_adjectives: list[WordAnalysis] = []
-        self._subject_related_adjectives_variations: list[WordAnalysis] = []
+        self._subject_related_adjectives: dict[int, WordAnalysis] = {}
+        self._subject_related_adjectives_variations: dict[int, list[WordAnalysis]] = {}
 
         self._dependent_noun: Optional[WordAnalysis] = None
         self._dependent_noun_variations: list[WordAnalysis] = []
 
-        self._dependent_noun_related_adjectives: list[WordAnalysis] = []
-        self._dependent_noun_related_adjectives_variations: list[WordAnalysis] = []
+        self._dependent_noun_related_adjectives: dict[int, WordAnalysis] = {}
+        self._dependent_noun_related_adjectives_variations: dict[int, list[WordAnalysis]] = {}
 
 
 
@@ -147,6 +146,77 @@ class PhraseAnalyser:
         return result[0]
 
 
+    def _determine_dependent_noun_adjectives(self) -> None:
+        if not self._dependent_noun_variations:
+            return
+
+        if not self._dependent_noun:
+            raise ValueError("Dependent noun not specified")
+
+        noun = self._dependent_noun
+        noun_number = (
+            GrammaticalNumber.PLURAL
+            if noun.is_pluralia_tantum
+            else noun.number
+        )
+        noun_case = noun.case
+        noun_gender = noun.gender
+
+        def matches_noun(adjective) -> bool:
+            return (
+                    noun_number in adjective.number
+                    and noun_case in adjective.case
+                    and noun_gender in adjective.gender
+            )
+
+        for index, adjectives in self._dependent_noun_variations:
+            match = (adjective for adjective in adjectives if matches_noun(adjective))
+            if not match:
+                logger.warning("Could not determine dependent noun adjective: %s.",
+                                adjectives[0].surface
+                               )
+                raise ValueError(f"Could not determine dependent noun adjective: {adjectives[0].surface}.")
+
+            self._dependent_noun_variations[index] = match
+
+
+
+    def _determine_subject_related_adjectives(self) -> None:
+        if not self._subject_related_adjectives_variations:
+            return
+
+        if not self._subject:
+            raise ValueError("Subject not specified")
+
+        subject = self._subject
+        subject_number = (
+            GrammaticalNumber.PLURAL
+            if subject.is_pluralia_tantum
+            else subject.number
+        )
+        subject_case = subject.case
+        subject_gender = subject.gender
+
+        def matches_subject(adjective) -> bool:
+            return (
+                    subject_number in adjective.number
+                    and subject_case in adjective.case
+                    and subject_gender in adjective.gender
+            )
+
+        for index, adjectives in self._subject_related_adjectives_variations.items():
+            match = next((adjective for adjective in adjectives if matches_subject(adjective)), None)
+
+            if match is None:
+                logger.warning(
+                    "Could not determine subject related adjective: %s. ",
+                    adjectives[0].surface,
+                )
+                raise ValueError(f"Could not determine subject related adjective: {adjectives[0].surface}.")
+
+            self._subject_related_adjectives[index] = match
+
+
     def _determine_correct_subject(self) -> WordAnalysis:
         if len(self._subject_variations):
             return self._subject_variations[0]
@@ -162,11 +232,12 @@ class PhraseAnalyser:
             subj_cases = subject_variation.case
             subj_number = subject_variation.number
 
-            for adjective_variation in self._related_adjectives_variations:
-                if (subj_genders & adjective_variation.gender and
-                        subj_cases & adjective_variation.case and
-                        subj_number & adjective_variation.number):
-                    result.append(subject_variation)
+            for adjective_variations in self._subject_related_adjectives_variations.values():
+                for variation in adjective_variations:
+                    if (subj_genders & variation.gender and
+                            subj_cases & variation.case and
+                            subj_number & variation.number):
+                        result.append(subject_variation)
 
         if len(result) > 1:
             logger.warning("Found multiple subject variations: %s", result)
@@ -189,7 +260,7 @@ class PhraseAnalyser:
             SentencePart.PUNCTUATION_MARK.value,
             SentencePart.CONJUNCTION.value,
         }
-        result: list[WordAnalysis] = []
+        result: dict[int, list[WordAnalysis]] = {}
 
         if direction not in (-1, 1):
             raise ValueError("direction must be -1 or 1")
@@ -205,18 +276,12 @@ class PhraseAnalyser:
             variations = self._get_word_analysis_by_index(index)
             parts = {variation.part for variation in variations}
 
-            result.extend(
-                variation
-                for variation in variations
-                if variation.part in allowed_parts
-            )
+            result[index] = [variation for variation in variations if variation.part in allowed_parts]
 
             if not (parts & allowed_parts or parts & bridge_parts):
                 break
 
         return result
-
-
 
 
     def _get_subject_index(self) -> int:
