@@ -61,6 +61,7 @@ def is_word_masculine_personal_only(word:BaseWord) -> bool:
 
 
 
+
 def split_phrase(phrase:str) -> dict[int, str]:
     tokens = re.findall(r"\w+|[^\w\s]", phrase)
     return {i: v for i, v in enumerate(tokens)}

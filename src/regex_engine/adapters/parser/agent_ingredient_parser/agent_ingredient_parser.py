@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from regex_engine.domain.errors import ParsingAttemptFailedError
+from regex_engine.src.regex_engine.domain.errors import ParsingAttemptFailedError
 from regex_engine.src.regex_engine.adapters.parser.agent_ingredient_parser.agent_client import AgentParserClient
 from regex_engine.src.regex_engine.application.dto import ParsedIngredient
 from regex_engine.src.regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import choose_proper_parsing

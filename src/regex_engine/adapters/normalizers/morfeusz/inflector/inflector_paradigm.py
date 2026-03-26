@@ -1,5 +1,6 @@
 from typing import Sequence
 
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_inflectionally_independent
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 from regex_engine.src.regex_engine.application.dto import BaseWord, GeneratedWord
 
@@ -8,7 +9,7 @@ from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, Gr
 
 class InflectionParadigm:
     def __init__(self, word: BaseWord, variations: Sequence[GeneratedWord]) -> None:
-        self.word = word
+        self.word:BaseWord = word
         self.variations = list(variations)
 
     def inflect(self, request: InflectionRequest) -> BaseWord:
@@ -27,14 +28,20 @@ class InflectionParadigm:
         number: GrammaticalNumber,
         case: GrammaticalCase,
     ) -> BaseWord:
+
+        if is_word_inflectionally_independent(self.word):
+            return self.word
+
         effective_number = (
             GrammaticalNumber.PLURAL
             if self.word.is_pluralia_tantum
             else number
         )
-
         for variation in self.variations:
-            if case in variation.case and effective_number in variation.number:
+            if (
+                case in variation.case
+                and effective_number in variation.number
+            ):
                 return variation
 
         raise ValueError(f"Cannot inflect word: {self.word}")
@@ -46,6 +53,7 @@ class InflectionParadigm:
                 and request.case in variation.case
                 and request.gender in variation.gender
                 and self.word.degree == variation.degree
+                and variation.part == SentencePart.ADJECTIVE
             ):
                 return variation
 
@@ -56,6 +64,8 @@ class InflectionParadigm:
         request: InflectionRequest,
     ) -> BaseWord:
         for variation in self.variations:
+            if variation.part != SentencePart.PASSIVE_ADJECTIVAL_PARTICIPLE:
+                continue
             if (
                 request.number in variation.number
                 and request.case in variation.case

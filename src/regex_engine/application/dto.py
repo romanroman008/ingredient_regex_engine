@@ -26,13 +26,20 @@ class BaseWord:
     lemma: str
     surface: str
     part: SentencePart
-    is_negation:bool
+    is_negation:bool = False
     is_pluralia_tantum:bool = False
-    number: set[GrammaticalNumber] = field(default_factory=set)
-    case: set[GrammaticalCase] = field(default_factory=set)
-    gender: set[GrammaticalGender] = field(default_factory=set)
+    number: frozenset[GrammaticalNumber] = field(default_factory=frozenset)
+    case: frozenset[GrammaticalCase] = field(default_factory=frozenset)
+    gender: frozenset[GrammaticalGender] = field(default_factory=frozenset)
     degree: Optional[GradationDegree] = None
-    annotations: list[str] = field(default_factory=list)
+    annotations: tuple[str] = field(default_factory=tuple)
+
+
+    def __post_init__(self) -> None:
+        object.__setattr__(self, "number", frozenset(self.number))
+        object.__setattr__(self, "case", frozenset(self.case))
+        object.__setattr__(self, "gender", frozenset(self.gender))
+        object.__setattr__(self, "annotations", tuple(self.annotations))
 
     @classmethod
     def _split_tag(cls, value: str, index: int) -> list[str]:
@@ -43,7 +50,11 @@ class BaseWord:
 
     @classmethod
     def _to_part(cls, tag: str) -> SentencePart:
-        return SentencePart(tag)
+        try:
+            part = SentencePart(tag)
+        except ValueError:
+            part = SentencePart.UNKNOWN
+        return part
 
 
 
@@ -75,11 +86,11 @@ class WordAnalysis(BaseWord):
             part=part,
             is_negation=is_negation,
             is_pluralia_tantum=is_pluralia_tantum,
-            number=number or set(),
-            case=case or set(),
-            gender=gender or set(),
+            number=number or frozenset(),
+            case=case or frozenset(),
+            gender=gender or frozenset(),
             degree=degree,
-            annotations=annotations or [],
+            annotations=annotations or tuple(),
         )
 
 
@@ -146,11 +157,11 @@ class GeneratedWord(BaseWord):
             part=part,
             is_negation=is_negation,
             is_pluralia_tantum=is_pluralia_tantum,
-            number=number or set(),
-            case=case or set(),
-            gender=gender or set(),
+            number=number or frozenset(),
+            case=case or frozenset(),
+            gender=gender or frozenset(),
             degree=degree,
-            annotations=annotations or [],
+            annotations=annotations or tuple(),
         )
 
     @classmethod

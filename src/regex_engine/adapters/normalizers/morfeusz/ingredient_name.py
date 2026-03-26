@@ -25,7 +25,7 @@ class MorfeuszIngredientNameNormalizer:
             (GrammaticalNumber.PLURAL, GrammaticalCase.INSTRUMENTAL),
         }
 
-        self._analysed_phrase = None
+        self._analysed_phrase:AnalysedPhrase | None = None
 
         self._subject_inflector = None
         self._subject_adjectives_inflectors:dict[int, InflectionParadigm] = {}
@@ -48,12 +48,12 @@ class MorfeuszIngredientNameNormalizer:
         return result
 
     def _inflect(self, target_number:GrammaticalNumber, target_case:GrammaticalCase) -> str:
-        inflected: dict[int, str] = {}
         analysed_phrase = self._analysed_phrase
+        inflected:dict[int, str] = analysed_phrase.phrase
 
         subject = self._subject_inflector.inflect(InflectionRequest(target_number, target_case))
-        inflected[analysed_phrase.subject.position] = subject
-        sub_gender = subject.word.gender
+        inflected[analysed_phrase.subject.position] = subject.surface
+        sub_gender = subject.gender
 
         sub_number, sub_case = target_number, target_case
         if analysed_phrase.subject.word.is_pluralia_tantum:
@@ -109,15 +109,4 @@ class MorfeuszIngredientNameNormalizer:
             self._dependent_noun_inflector = self._inflector.prepare(analysed_phrase.dependent_noun.word)
             for noun_adjective in analysed_phrase.dependent_noun_adjectives:
                 self._dependent_adjectives_inflectors[noun_adjective.position] = self._inflector.prepare(noun_adjective.word)
-
-
-
-
-
-
-
-
-
-
-
 

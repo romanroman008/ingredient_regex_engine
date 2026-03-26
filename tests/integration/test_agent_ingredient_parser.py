@@ -22,6 +22,7 @@ class TestParseOnce:
                     unit="g",
                     condition="schłodzonego",
                     name="masła",
+                    extra="",
                 ),
                 ParsedIngredient(
                     raw_input=ingredient,
@@ -30,6 +31,7 @@ class TestParseOnce:
                     unit="g",
                     condition="schłodzonego",
                     name="masła",
+                    extra="",
                 ),
                 ParsedIngredient(
                     raw_input=ingredient,
@@ -38,6 +40,7 @@ class TestParseOnce:
                     unit="g",
                     condition="schłodzonego",
                     name="masła",
+                    extra="",
                 ),
             ]
         )
@@ -51,6 +54,7 @@ class TestParseOnce:
             unit="g",
             condition="schłodzonego",
             name="masła",
+            extra="",
         )
         assert parser.parser_client.parse.await_count == 3
         parser.parser_client.parse.assert_any_await(ingredient, 0)
@@ -71,6 +75,7 @@ class TestParseOnce:
                     unit="g",
                     condition="",
                     name="masła",
+                    extra="",
                 ),
                 ParsedIngredient(
                     raw_input=ingredient,
@@ -79,6 +84,7 @@ class TestParseOnce:
                     unit="g",
                     condition="",
                     name="masła",
+                    extra="",
                 ),
             ]
         )
@@ -100,6 +106,7 @@ class TestParse:
             unit="g",
             condition="",
             name="masła",
+            extra="",
         )
 
         parse_once_mock = AsyncMock(return_value=expected)
@@ -122,6 +129,7 @@ class TestParse:
             unit="g",
             condition="",
             name="masła",
+            extra="",
         )
 
         parse_once_mock = AsyncMock(

@@ -18,10 +18,6 @@ class GrammaticalNumber(StrEnum):
     SINGULAR = "sg"
     PLURAL = "pl"
 
-class GradationDegree(StrEnum):
-    POSITIVE = "pos"
-    COMPARATIVE = "com"
-    SUPERLATIVE = "sup"
 
 class GrammaticalCase(StrEnum):
     NOMINATIVE = "nom"      # mianownik
@@ -39,6 +35,11 @@ class GrammaticalGender(StrEnum):
     FEMININE = "f"  # żeński
     NEUTER = "n" #nijaki
 
+
+class GradationDegree(StrEnum):
+    POSITIVE = "pos"
+    COMPARATIVE = "com"
+    SUPERLATIVE = "sup"
 
 
 
