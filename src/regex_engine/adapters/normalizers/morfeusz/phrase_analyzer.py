@@ -56,6 +56,7 @@ class PhraseAnalyser:
         finally:
             self._clear()
 
+
     def _prepare(self, phrase:str):
         phrase_analysis = self.morfeusz.analyse(phrase)
 
@@ -167,7 +168,7 @@ class PhraseAnalyser:
 
         noun = self._dependent_noun
         noun_number = (
-            GrammaticalNumber.PLURAL
+            {GrammaticalNumber.PLURAL}
             if noun.is_pluralia_tantum
             else noun.number
         )
@@ -203,11 +204,16 @@ class PhraseAnalyser:
 
         subject = self._subject
         subject_number = (
-            GrammaticalNumber.PLURAL
+            {GrammaticalNumber.PLURAL}
             if subject.is_pluralia_tantum
             else subject.number
         )
-        subject_case = subject.case
+
+        subject_case = (
+            set(GrammaticalCase)
+            if is_word_inflectionally_independent(subject)
+            else subject.case
+        )
         subject_gender = subject.gender
 
         def matches_subject(adjective) -> bool:

@@ -69,8 +69,8 @@ class MorfeuszIngredientNameNormalizer:
             dep_noun_number = target_number
             dep_noun_case = analysed_phrase.dependent_noun.word.case
             dependent_noun = self._dependent_noun_inflector.inflect(InflectionRequest(dep_noun_number, dep_noun_case))
-            dep_noun_gender = dependent_noun.word.gender
-            inflected[analysed_phrase.dependent_noun.position] = dependent_noun
+            dep_noun_gender = dependent_noun.gender
+            inflected[analysed_phrase.dependent_noun.position] = dependent_noun.surface
 
 
             if analysed_phrase.dependent_noun.word.is_pluralia_tantum:

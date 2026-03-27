@@ -138,3 +138,36 @@ def test_analyse_happy_path(phrase:str, expected:dict, analyser):
     assert Counter(actual["dependent_noun_adjectives"]) == Counter(expected["dependent_noun_adjectives"])
     assert Counter(actual["subject_adjectives"]) == Counter(expected["subject_adjectives"])
 
+
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "kolorowy",
+        "czarny",
+        "z gotowanym",
+        "obrane i upieczone",
+    ]
+
+)
+def test_analyse__no_subject__raise_value_error(phrase:str, analyser):
+    # Act / Assert
+    with pytest.raises(ValueError):
+        analyser.analyse(phrase)
+
+
+
+@pytest.mark.parametrize(
+    "phrase",
+    [
+        "kolorowy jajko",
+        "gotowane fasola czerwona",
+        "smażony łosoś niebieska",
+        "gotowany pstrąg jajka zwykły"
+    ]
+)
+def test_analyse__invalid_inflection__raise_value_error(phrase:str, analyser):
+    # Act / Assert
+    with pytest.raises(ValueError):
+        analyser.analyse(phrase)

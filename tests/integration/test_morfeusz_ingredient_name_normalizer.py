@@ -1,3 +1,5 @@
+from collections import Counter
+
 import pytest
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
@@ -150,7 +152,7 @@ async def test_stem_with_negations(normalizer, word: str, expected: str):
 async def test_inflect_single_ingredients_names(normalizer, word, expected: list[str]):
     result = await normalizer.inflect(word)
 
-    assert result == expected
+    assert Counter(result) == Counter(expected)
 
 
 @pytest.mark.asyncio
@@ -201,7 +203,7 @@ async def test_inflect_single_ingredients_names(normalizer, word, expected: list
 async def test_inflect_ingredient_names_with_adjectives(normalizer, word: str, expected: list[str]):
     result = await normalizer.inflect(word)
 
-    assert result == expected
+    assert Counter(result) == Counter(expected)
 
 
 
@@ -250,7 +252,7 @@ async def test_inflect_ingredient_names_with_adjectives(normalizer, word: str, e
 async def test_inflect_with_punctuation_marks(normalizer, word: str, expected: list[str]):
     result = await normalizer.inflect(word)
 
-    assert result == expected
+    assert Counter(result) == Counter(expected)
 
 
 @pytest.mark.asyncio
@@ -298,4 +300,4 @@ async def test_inflect_with_punctuation_marks(normalizer, word: str, expected: l
 async def test_inflect_with_negations(normalizer, word: str, expected: str):
     result = await normalizer.inflect(word)
 
-    assert result == expected
+    assert Counter(result) == Counter(expected)

@@ -32,9 +32,9 @@ def tuples_to_generated_word(tuples:list[tuple]) -> list[GeneratedWord]:
 
 
 def is_word_cooking_related(word:BaseWord) -> bool:
-    return not (is_word_colloquial(word) and
-                is_word_former(word) and
-                is_word_abusive(word) and
+    return not (is_word_colloquial(word) or
+                is_word_former(word) or
+                is_word_abusive(word) or
                 is_word_masculine_personal_only(word)
                 )
 
@@ -56,9 +56,8 @@ def is_word_abusive(word:BaseWord) -> bool:
 def is_word_masculine_personal_only(word:BaseWord) -> bool:
     return (
             len(word.gender) == 1
-            and word.gender is GrammaticalGender.MASC_PERSONAL
+            and GrammaticalGender.MASC_PERSONAL in word.gender
             )
-
 
 
 
