@@ -2,7 +2,9 @@ import asyncio
 
 from agents import Agent, trace, Runner
 
-from regex_engine.application.dto import CategorizedIngredient
+from regex_engine import settings
+
+from regex_engine.src.regex_engine.application.dto import CategorizedIngredient
 from regex_engine.src.regex_engine.domain.enums import Category
 
 categorizer_prompt = """
