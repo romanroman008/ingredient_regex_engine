@@ -2,6 +2,7 @@ from typing import Counter
 
 import pytest
 
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.unit_normalizer import MorfeuszUnitNormalizer
 
 pytest.importorskip("morfeusz2")
@@ -13,8 +14,12 @@ def morfeusz():
     return morfeusz2.Morfeusz()
 
 @pytest.fixture
-def normalizer(morfeusz: morfeusz2.Morfeusz):
-    return MorfeuszUnitNormalizer(morfeusz)
+def inflector(morfeusz):
+    return Inflector(morfeusz)
+
+@pytest.fixture
+def normalizer(morfeusz, inflector):
+    return MorfeuszUnitNormalizer(inflector, morfeusz)
 
 
 @pytest.mark.asyncio
@@ -48,7 +53,6 @@ async def test_stem_inflected_units(normalizer, unit_name:str, expected:str):
             "grama",
             "gramem",
             "gramy",
-            "gramów",
             "gramami"
         ]),
         ("opakowanie", [

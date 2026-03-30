@@ -2,7 +2,8 @@ from typing import Sequence
 
 from morfeusz2 import Morfeusz
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis, \
+    is_word_cooking_related
 
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
 from regex_engine.src.regex_engine.application.dto import BaseWord
@@ -15,10 +16,12 @@ from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.infle
 def _choose_first_noun(words:list[BaseWord]) -> BaseWord:
     for word in words:
         part = word.part
-        if part == SentencePart.NOUN:
+        if (part == SentencePart.NOUN and
+            is_word_cooking_related(word)
+        ):
             return word
 
-    raise ValueError(f"Could not find adjective or passive adjective participle in {words}")
+    raise ValueError(f"Could not find unit in {words}")
 
 
 class MorfeuszUnitNormalizer:
@@ -47,9 +50,10 @@ class MorfeuszUnitNormalizer:
         ).surface
 
 
-    async def inflect(self, stem:str) -> list[str]:
+    async def inflect(self, stem:str) -> set[str]:
         self._prepare(stem)
-        return [self._unit_inflector.inflect(inflection).surface for inflection in self._inflections]
+        return set(self._unit_inflector.inflect(inflection).surface
+                   for inflection in self._inflections)
 
 
     def _prepare(self, unit:str):
@@ -65,5 +69,5 @@ class MorfeuszUnitNormalizer:
         last_analyse_position = analyse[-1][0]
         if last_analyse_position != 0:
             raise ValueError(f"Multiple words detected {unit}")
-        return tuples_to_generated_word(analyse)
+        return tuples_to_word_analysis(analyse)
 

@@ -2,6 +2,7 @@ from typing import Counter
 
 import pytest
 
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.adjective_normalizer import MorfeuszAdjectiveNormalizer
 
 pytest.importorskip("morfeusz2")
@@ -13,8 +14,12 @@ def morfeusz():
     return morfeusz2.Morfeusz()
 
 @pytest.fixture
-def morfeusz_adjective_normalizer(morfeusz):
-    return MorfeuszAdjectiveNormalizer(morfeusz)
+def inflector(morfeusz):
+    return Inflector(morfeusz)
+
+@pytest.fixture
+def morfeusz_adjective_normalizer(morfeusz, inflector):
+    return MorfeuszAdjectiveNormalizer(inflector,morfeusz)
 
 
 @pytest.mark.asyncio

@@ -1,4 +1,6 @@
 from morfeusz2 import Morfeusz
+
+from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 
@@ -62,10 +64,11 @@ class MorfeuszAdjectiveNormalizer:
         ).surface
 
 
-    async def inflect(self, stem:str) -> list[str]:
+    async def inflect(self, stem:str) -> set[str]:
         self._prepare(stem)
-        return [self._adjective_inflector.inflect(inflection).surface
-                for inflection in self._inflections]
+
+        return set(self._adjective_inflector.inflect(inflection).surface
+                for inflection in self._inflections)
 
 
 
@@ -82,7 +85,7 @@ class MorfeuszAdjectiveNormalizer:
         if last_analyse_position != 0:
             raise ValueError(f"Multiple words detected {adjective}")
 
-        return tuples_to_generated_word(analyses)
+        return tuples_to_word_analysis(analyses)
 
 
 

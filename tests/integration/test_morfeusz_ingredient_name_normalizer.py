@@ -141,12 +141,12 @@ async def test_stem_with_negations(normalizer, word: str, expected: str):
     "word, expected",
     [
 
-        ("kakao", ["kakao", "kakao", "kakao", "kakao", "kakao", "kakao", "kakao",]),
-        ("białko", ["białko", "białka", "białko", "białkiem", "białka", "białek", "białkami"]),
-        ("żółtko", ["żółtko", "żółtka", "żółtko", "żółtkiem", "żółtka", "żółtek", "żółtkami"]),
-        ("czekolada", ["czekolada", "czekolady", "czekoladę", "czekoladą", "czekolady", "czekolad", "czekoladami"]),
-        ("masło", ["masło", "masła", "masło", "masłem", "masła", "maseł", "masłami"]),
-        ("drożdże", ["drożdże", "drożdży", "drożdże", "drożdżami", "drożdże", "drożdży", "drożdżami"])
+        ("kakao", ["kakao"]),
+        ("białko", ["białko", "białka", "białkiem", "białek", "białkami"]),
+        ("żółtko", ["żółtko", "żółtka", "żółtkiem", "żółtek", "żółtkami"]),
+        ("czekolada", ["czekolada", "czekolady", "czekoladę", "czekoladą", "czekolad", "czekoladami"]),
+        ("masło", ["masło", "masła", "masłem", "maseł", "masłami"]),
+        ("drożdże", ["drożdże", "drożdży", "drożdżami"])
     ]
 )
 async def test_inflect_single_ingredients_names(normalizer, word, expected: list[str]):
@@ -162,7 +162,6 @@ async def test_inflect_single_ingredients_names(normalizer, word, expected: list
         ("mleczko kokosowe",[
             "mleczko kokosowe",
             "mleczka kokosowego",
-            "mleczko kokosowe",
             "mleczkiem kokosowym",
             "mleczka kokosowe",
             "mleczek kokosowych",
@@ -192,7 +191,6 @@ async def test_inflect_single_ingredients_names(normalizer, word, expected: list
         ("masło czekoladowe z dodatkiem kakao",[
             "masło czekoladowe z dodatkiem kakao",
             "masła czekoladowego z dodatkiem kakao",
-            "masło czekoladowe z dodatkiem kakao",
             "masłem czekoladowym z dodatkiem kakao",
             "masła czekoladowe z dodatkiem kakao",
             "maseł czekoladowych z dodatkiem kakao",
@@ -214,7 +212,6 @@ async def test_inflect_ingredient_names_with_adjectives(normalizer, word: str, e
         ("czarny, suchy pieprz", [
             "czarny, suchy pieprz",
             "czarnego, suchego pieprzu",
-            "czarny, suchy pieprz",
             "czarnym, suchym pieprzem",
             "czarne, suche pieprze",
             "czarnych, suchych pieprzy",
@@ -223,20 +220,22 @@ async def test_inflect_ingredient_names_with_adjectives(normalizer, word: str, e
         ("naturalny, słodzony miód", [
             "naturalny, słodzony miód",
             "naturalnego, słodzonego miodu",
-            "naturalny, słodzony miód",
             "naturalnym, słodzonym miodem",
             "naturalne, słodzone miody",
             "naturalnych, słodzonych miodów",
             "naturalnymi, słodzonymi miodami"
         ]),
-            ("niebieskie żółtko jaja gotowane i obrane", [
-            "niebieskie żółtko jaja gotowane i obrane",
-            "niebieskiego żółtka jaja gotowanego i obranego",
-            "niebieskie żółtko jaja gotowane i obrane",
-            "niebieskim żółtkiem jaja gotowanym i obranym",
-            "niebieskie żółtka jaj gotowane i obrane",
+        ("niebieskie żółtko jaja gotowane i obrane", [
+            "niebieskie żółtko jaj gotowanych i obranych",
+            "niebieskiego żółtka jaj gotowanych i obranych",
+            "niebieskim żółtkiem jaj gotowanych i obranych",
+            "niebieskie żółtka jaj gotowanych i obranych",
             "niebieskich żółtek jaj gotowanych i obranych",
-            "niebieskimi żółtkami jaj gotowanymi i obranymi"
+            "niebieskimi żółtkami jaj gotowanych i obranych",
+            "niebieskie żółtko jaja gotowane i obrane",
+            "niebieskie żółtka jaja gotowane i obrane",
+            "niebieskim żółtkiem jajami gotowanymi i obranymi",
+            "niebieskimi żółtkami jajami gotowanymi i obranymi"
         ]),
         ("mąka kolorowa typu 2", [
             "mąka kolorowa typu 2",
@@ -262,16 +261,13 @@ async def test_inflect_with_punctuation_marks(normalizer, word: str, expected: l
         ("niesłodzone kakao", [
             "niesłodzone kakao",
             "niesłodzonego kakao",
-            "niesłodzone kakao",
             "niesłodzonym kakao",
-            "niesłodzone kakao",
             "niesłodzonych kakao",
             "niesłodzonymi kakao"
         ]),
         ("niesłodzony cukier", [
             "niesłodzony cukier",
             "niesłodzonego cukru",
-            "niesłodzony cukier",
             "niesłodzonym cukrem",
             "niesłodzone cukry",
             "niesłodzonych cukrów",
@@ -279,7 +275,6 @@ async def test_inflect_with_punctuation_marks(normalizer, word: str, expected: l
         ]),
         ("nieświeży śledź", [
             "nieświeży śledź",
-            "nieświeżego śledzia",
             "nieświeżego śledzia",
             "nieświeżym śledziem",
             "nieświeże śledzie",
@@ -289,7 +284,6 @@ async def test_inflect_with_punctuation_marks(normalizer, word: str, expected: l
         ("nienaturalny jogurt", [
             "nienaturalny jogurt",
             "nienaturalnego jogurtu",
-            "nienaturalny jogurt",
             "nienaturalnym jogurtem",
             "nienaturalne jogurty",
             "nienaturalnych jogurtów",
@@ -301,3 +295,5 @@ async def test_inflect_with_negations(normalizer, word: str, expected: str):
     result = await normalizer.inflect(word)
 
     assert Counter(result) == Counter(expected)
+
+

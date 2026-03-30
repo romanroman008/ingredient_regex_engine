@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import join_tokens
 from regex_engine.src.regex_engine.application.dto import AnalysedPhrase
 
@@ -11,19 +13,53 @@ from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer
 from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 
 
+class InflectionPair(NamedTuple):
+    subject: InflectionRequest
+    dependent_noun: InflectionRequest
+
+
 class MorfeuszIngredientNameNormalizer:
-    def __init__(self, inflector:Inflector, phrase_analyser:PhraseAnalyser):
+
+    CASES_BY_NUMBER = {
+        GrammaticalNumber.SINGULAR: [
+            GrammaticalCase.NOMINATIVE,
+            GrammaticalCase.GENITIVE,
+            GrammaticalCase.ACCUSATIVE,
+            GrammaticalCase.INSTRUMENTAL,
+        ],
+        GrammaticalNumber.PLURAL: [
+            GrammaticalCase.NOMINATIVE,
+            GrammaticalCase.GENITIVE,
+            GrammaticalCase.INSTRUMENTAL,
+        ],
+    }
+
+    DEFAULT_STEM_VARIATION = InflectionPair(
+        subject=InflectionRequest(GrammaticalNumber.SINGULAR, GrammaticalCase.NOMINATIVE),
+        dependent_noun=InflectionRequest(GrammaticalNumber.SINGULAR, GrammaticalCase.NOMINATIVE)
+    )
+
+
+    def __init__(self,
+                 inflector:Inflector,
+                 phrase_analyser:PhraseAnalyser,
+                 stem_variant:InflectionPair | None = None,
+                 inflection_variations: tuple[InflectionPair] = tuple()
+                 ):
         self._inflector = inflector
         self._phrase_analyser = phrase_analyser
-        self._inflection_variations = {
-            (GrammaticalNumber.SINGULAR, GrammaticalCase.NOMINATIVE),
-            (GrammaticalNumber.SINGULAR, GrammaticalCase.GENITIVE),
-            (GrammaticalNumber.SINGULAR, GrammaticalCase.ACCUSATIVE),
-            (GrammaticalNumber.SINGULAR, GrammaticalCase.INSTRUMENTAL),
-            (GrammaticalNumber.PLURAL, GrammaticalCase.NOMINATIVE),
-            (GrammaticalNumber.PLURAL, GrammaticalCase.GENITIVE),
-            (GrammaticalNumber.PLURAL, GrammaticalCase.INSTRUMENTAL),
-        }
+
+        self._stem_variant = (
+            stem_variant
+            if stem_variant
+            else self.DEFAULT_STEM_VARIATION
+        )
+
+        self._inflection_variations = (
+            inflection_variations
+            if inflection_variations
+            else self._build_default_inflection_variations()
+        )
 
         self._analysed_phrase:AnalysedPhrase | None = None
 
@@ -36,26 +72,47 @@ class MorfeuszIngredientNameNormalizer:
     async def stem(self, ingredient_name:str):
         self._prepare(ingredient_name)
 
-        return self._inflect(GrammaticalNumber.SINGULAR, GrammaticalCase.NOMINATIVE)
+        return self._inflect(self._stem_variant)
 
 
-    async def inflect(self, stem:str) -> list[str]:
+    async def inflect(self, stem:str) -> set[str]:
         self._prepare(stem)
         result = []
         for inflection in self._inflection_variations:
-            result.append(self._inflect(*inflection))
+            result.append(self._inflect(inflection))
 
-        return result
+        return set(result)
 
-    def _inflect(self, target_number:GrammaticalNumber, target_case:GrammaticalCase) -> str:
+    def _build_default_inflection_variations(self):
+        result = []
+
+        for number, cases in self.CASES_BY_NUMBER.items():
+            for case in cases:
+                result.append(InflectionPair(
+                    subject=InflectionRequest(number, case),
+                    dependent_noun=InflectionRequest(number, case),
+                ))
+
+        for number, cases in self.CASES_BY_NUMBER.items():
+            for case in cases:
+                result.append(InflectionPair(
+                    subject=InflectionRequest(number, case),
+                    dependent_noun=InflectionRequest(number, GrammaticalCase.GENITIVE),
+                ))
+
+        return tuple(result)
+
+
+
+    def _inflect(self, inflection_pair:InflectionPair) -> str:
         analysed_phrase = self._analysed_phrase
         inflected:dict[int, str] = analysed_phrase.phrase
 
-        subject = self._subject_inflector.inflect(InflectionRequest(target_number, target_case))
+        subject = self._subject_inflector.inflect(inflection_pair.subject)
         inflected[analysed_phrase.subject.position] = subject.surface
         sub_gender = subject.gender
 
-        sub_number, sub_case = target_number, target_case
+        sub_number, sub_case = inflection_pair.subject.number, inflection_pair.subject.case
         if analysed_phrase.subject.word.is_pluralia_tantum:
             sub_number = GrammaticalNumber.PLURAL
 
@@ -66,8 +123,8 @@ class MorfeuszIngredientNameNormalizer:
                                        .surface)
 
         if analysed_phrase.dependent_noun:
-            dep_noun_number = target_number
-            dep_noun_case = analysed_phrase.dependent_noun.word.case
+            dep_noun_number = inflection_pair.dependent_noun.number
+            dep_noun_case = inflection_pair.dependent_noun.case
             dependent_noun = self._dependent_noun_inflector.inflect(InflectionRequest(dep_noun_number, dep_noun_case))
             dep_noun_gender = dependent_noun.gender
             inflected[analysed_phrase.dependent_noun.position] = dependent_noun.surface
