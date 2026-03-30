@@ -42,7 +42,7 @@ class RegexEntry:
 
     @property
     def variants(self):
-        return self._variants
+        return frozenset(self._variants)
 
     @property
     def pattern(self):
@@ -63,8 +63,8 @@ class RegexEntry:
         if not variant:
             return
 
-        self.variants.add(variant)
-        self.variants.add(self.stem)
+        self._variants.add(variant)
+        self._variants.add(self.stem)
 
         self._compile()
 
@@ -77,7 +77,7 @@ class RegexEntry:
         if variant not in self.variants:
             return
 
-        self.variants.remove(variant)
+        self._variants.remove(variant)
         self._compile()
 
     def __hash__(self) -> int:
