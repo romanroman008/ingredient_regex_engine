@@ -2,12 +2,12 @@ from typing import Optional
 
 import pytest
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_masculine_personal_only
-from regex_engine.src.regex_engine.domain.models.grammar import (
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_masculine_personal_only
+from regex_engine.domain.models.grammar import (
     SentencePart, GrammaticalNumber, GrammaticalCase, GrammaticalGender, GradationDegree,
 
 )
-from regex_engine.src.regex_engine.application.dto import BaseWord
+from regex_engine.application.dto import BaseWord
 
 
 

@@ -3,9 +3,9 @@
 from dataclasses import FrozenInstanceError
 import pytest
 
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GradationDegree
+from regex_engine.domain.models.grammar import SentencePart, GradationDegree
 
-from regex_engine.src.regex_engine.application.dto import WordAnalysis, GeneratedWord
+from regex_engine.application.dto import WordAnalysis, GeneratedWord
 
 
 class TestWordAnalysisBuild:

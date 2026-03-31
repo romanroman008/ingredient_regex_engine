@@ -2,15 +2,15 @@ from typing import Sequence
 
 from morfeusz2 import Morfeusz
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis, \
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis, \
     is_word_cooking_related
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
-from regex_engine.src.regex_engine.application.dto import BaseWord
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
+from regex_engine.application.dto import BaseWord
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
-from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, SentencePart
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
+from regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, SentencePart
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 
 
 def _choose_first_noun(words:list[BaseWord]) -> BaseWord:

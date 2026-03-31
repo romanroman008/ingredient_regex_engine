@@ -2,10 +2,10 @@ import json
 import logging
 from pathlib import Path
 
-from regex_engine.settings import OUTPUT_DIR
-from regex_engine.src.regex_engine.domain.enums import RegexKind
-from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
+from settings import OUTPUT_DIR
+from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry import RegexRegistry
 
 logger = logging.getLogger("regex_repository")
 

@@ -2,8 +2,8 @@ from typing import Counter
 
 import pytest
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.adjective_normalizer import MorfeuszAdjectiveNormalizer
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
+from regex_engine.adapters.normalizers.morfeusz.adjective_normalizer import MorfeuszAdjectiveNormalizer
 
 pytest.importorskip("morfeusz2")
 

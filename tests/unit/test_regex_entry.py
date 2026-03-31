@@ -1,6 +1,6 @@
 import pytest
 
-from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_entry import RegexEntry
 
 
 

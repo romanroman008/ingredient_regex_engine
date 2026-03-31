@@ -1,10 +1,10 @@
 from morfeusz2 import Morfeusz
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word, \
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word, \
     is_word_inflectionally_independent
-from regex_engine.src.regex_engine.application.dto import BaseWord, GeneratedWord
+from regex_engine.application.dto import BaseWord, GeneratedWord
 
 
 class Inflector:

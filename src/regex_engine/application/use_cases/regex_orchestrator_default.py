@@ -1,12 +1,12 @@
 import asyncio
 import logging
 
-from regex_engine.src.regex_engine.application.dto import ParsedIngredient
-from regex_engine.src.regex_engine.domain.enums import RegexKind
-from regex_engine.src.regex_engine.domain.errors import NameNotDetectedError
-from regex_engine.src.regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
-from regex_engine.src.regex_engine.ports.regex_registry import RegexRegistryRepository
-from regex_engine.src.regex_engine.ports.regex_service import RegexService
+from regex_engine.application.dto import ParsedIngredient
+from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.errors import NameNotDetectedError
+from regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
+from regex_engine.ports.regex_registry import RegexRegistryRepository
+from regex_engine.ports.regex_service import RegexService
 
 
 logger = logging.getLogger("regex_orchestrator")

@@ -1,5 +1,5 @@
 import re
-from regex_engine.src.regex_engine.domain.enums import RegexKind
+from regex_engine.domain.enums import RegexKind
 
 ENUM_TOKEN_RE = re.compile(
     "|".join(

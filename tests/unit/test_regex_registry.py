@@ -1,7 +1,7 @@
 import pytest
 
-from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry import RegexRegistry
 
 
 def _entry(stem:str, variants: list[str]) -> RegexEntry:

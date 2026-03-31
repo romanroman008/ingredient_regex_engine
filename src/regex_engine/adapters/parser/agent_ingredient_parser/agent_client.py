@@ -2,9 +2,8 @@ import asyncio
 
 from agents import Agent, Runner, trace
 
-from regex_engine import settings
 
-from regex_engine.src.regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto import ParsedIngredient
 
 PARSER_PROMPT = """
 Jesteś parserem składników. Twoim zadaniem jest ustandaryzowanie części zdań opisujących składnik do odpowiednich kategorii:

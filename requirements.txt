@@ -1,0 +1,4 @@
+pydantic==2.12.2
+openai-agents>=0.2.0
+python-dotenv==1.2.2
+morfeusz2>=1.99

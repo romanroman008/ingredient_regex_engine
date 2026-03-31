@@ -5,29 +5,34 @@ import logging
 from pathlib import Path
 
 
-from regex_engine.src.regex_engine.domain.errors import NameNotDetectedError
-from regex_engine.src.regex_engine.domain.models.ingredient_record import IngredientRecord
-from regex_engine.src.regex_engine.ports.ingredient_parser import IngredientParser
-from regex_engine.src.regex_engine.ports.regex_orchestrator import RegexOrchestrator
-from regex_engine.src.regex_engine.ports.regex_resolver import RegexResolver
+from regex_engine.domain.errors import NameNotDetectedError
+from regex_engine.domain.models.ingredient_record import IngredientRecord
+from regex_engine.ports.categorizer import Categorizer
+from regex_engine.ports.ingredient_parser import IngredientParser
+from regex_engine.ports.regex_orchestrator import RegexOrchestrator
+from regex_engine.ports.regex_resolver import RegexResolver
 
 logger = logging.getLogger("regex_engine")
 
 
 class IngredientFilterEngine:
-    def __init__(self, regex_orchestrator: RegexOrchestrator, regex_resolver: RegexResolver, parser: IngredientParser):
+    def __init__(self, regex_orchestrator: RegexOrchestrator,
+                 regex_resolver: RegexResolver,
+                 parser: IngredientParser,
+                 categorizer:Categorizer
+                 ):
         self.regex_orchestrator = regex_orchestrator
         self.regex_resolver = regex_resolver
         self.parser = parser
+        self.categorizer = categorizer
 
     @staticmethod
     def _sort_by_count_desc(records: list[IngredientRecord]) -> list[IngredientRecord]:
         return sorted(records, key=lambda r: r.count, reverse=True)
 
 
-    @staticmethod
-    def categorize(ingredient_stem: str):
-        pass
+    async def categorize(self, ingredient_stem: str):
+        return self.categorizer.categorize(ingredient_stem)
 
     def filter_records_with_conj(self, records: list[IngredientRecord]):
         clean = []
@@ -44,7 +49,6 @@ class IngredientFilterEngine:
 
     def reduce_records(self, records: list[IngredientRecord]) -> list[IngredientRecord]:
         remaining = []
-
 
         for record in records:
             if self.regex_resolver.can_be_standardized(record.name):
@@ -79,6 +83,8 @@ class IngredientFilterEngine:
 
         with path.open("w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    async def filter
 
     async def filter_records(self, ingredients: list[IngredientRecord], max_rounds: int = 10):
         total_records_number = len(ingredients)

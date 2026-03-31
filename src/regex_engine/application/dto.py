@@ -2,9 +2,9 @@
 
 from pydantic import BaseModel
 
-from regex_engine.src.regex_engine.domain.enums import Category
-from regex_engine.src.regex_engine.domain.models.grammar import GradationDegree, GrammaticalCase
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalGender
+from regex_engine.domain.enums import Category
+from regex_engine.domain.models.grammar import GradationDegree, GrammaticalCase
+from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalGender
 
 
 class ParsedIngredient(BaseModel):

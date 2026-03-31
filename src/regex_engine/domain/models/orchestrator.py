@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from typing import Optional
 
-from regex_engine.src.regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureStatus
 
 
 @dataclass(slots=True, frozen=True)
@@ -9,6 +10,7 @@ class EnsureWordResult:
     status:EnsureStatus
     stem:str
     word:str
+    exceptions:Optional[Exception] = None
 
 
 
@@ -16,6 +18,6 @@ class EnsureWordResult:
 class EnsureIngredientResult:
     raw_input:str
     name:EnsureWordResult
-    items:dict[RegexKind,EnsureWordResult]
+    items:dict[RegexKind, EnsureWordResult]
 
 

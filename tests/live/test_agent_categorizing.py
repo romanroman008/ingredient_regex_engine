@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 
-from regex_engine.src.regex_engine.domain.enums import Category
-from regex_engine.src.regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
+from regex_engine.domain.enums import Category
+from regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
 
 @pytest.fixture
 def categorizer() -> AgentCategorizer:

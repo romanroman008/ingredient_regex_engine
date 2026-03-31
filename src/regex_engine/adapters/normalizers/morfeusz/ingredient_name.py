@@ -1,16 +1,16 @@
 from typing import NamedTuple
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import join_tokens
-from regex_engine.src.regex_engine.application.dto import AnalysedPhrase
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import join_tokens
+from regex_engine.application.dto import AnalysedPhrase
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
 
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
-from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
+from regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase
+from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 
 
 class InflectionPair(NamedTuple):

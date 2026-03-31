@@ -2,9 +2,9 @@ from collections import Counter
 
 import pytest
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.ingredient_name import MorfeuszIngredientNameNormalizer
+from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
+from regex_engine.adapters.normalizers.morfeusz.ingredient_name import MorfeuszIngredientNameNormalizer
 
 
 pytest.importorskip("morfeusz2")

@@ -2,11 +2,11 @@ from collections import Counter
 
 import pytest
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
+from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 
-from regex_engine.src.regex_engine.application.dto import AnalysedPhrase, BaseWord, PositionedWord
+from regex_engine.application.dto import AnalysedPhrase, BaseWord, PositionedWord
 
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase, GrammaticalGender, \
+from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase, GrammaticalGender, \
     GradationDegree
 
 pytest.importorskip("morfeusz2")

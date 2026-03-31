@@ -1,10 +1,10 @@
 import pytest
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GradationDegree
-from regex_engine.src.regex_engine.application.dto import BaseWord, GeneratedWord
-from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, GrammaticalGender
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
+from regex_engine.domain.models.grammar import SentencePart, GradationDegree
+from regex_engine.application.dto import BaseWord, GeneratedWord
+from regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, GrammaticalGender
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
 
 

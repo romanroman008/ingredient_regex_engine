@@ -6,14 +6,14 @@ from typing import Optional, Sequence
 from morfeusz2 import Morfeusz
 
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non_cooking_related, \
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non_cooking_related, \
     is_word_inflectionally_independent, split_phrase, join_tokens
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related, \
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related, \
     tuples_to_word_analysis
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalCase, GrammaticalNumber, \
+from regex_engine.domain.models.grammar import SentencePart, GrammaticalCase, GrammaticalNumber, \
     GrammaticalGender
-from regex_engine.src.regex_engine.application.dto import WordAnalysis, AnalysedPhrase, PositionedWord
+from regex_engine.application.dto import WordAnalysis, AnalysedPhrase, PositionedWord
 
 logger = logging.getLogger("phrase_analyzer")
 

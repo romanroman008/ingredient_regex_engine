@@ -1,8 +1,8 @@
 from collections import Counter
 from typing import Any
 
-from regex_engine.src.regex_engine.application.dto import ParsedIngredient
-from regex_engine.src.regex_engine.domain.errors import AmbiguousParsingError
+from regex_engine.application.dto import ParsedIngredient
+from regex_engine.domain.errors import AmbiguousParsingError
 
 
 def get_most_occurred_value(values: list[Any]) -> Any:

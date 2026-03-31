@@ -1,18 +1,18 @@
 from morfeusz2 import Morfeusz
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
+from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 
-from regex_engine.src.regex_engine.application.dto import BaseWord
+from regex_engine.application.dto import BaseWord
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
-from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, GrammaticalGender, SentencePart
+from regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, GrammaticalGender, SentencePart
 
 
 def _choose_first_adj_or_pap(words:list[BaseWord]) -> BaseWord:

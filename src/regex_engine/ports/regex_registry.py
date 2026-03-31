@@ -1,9 +1,9 @@
 
 from typing import Protocol, Optional, Sequence
 
-from regex_engine.src.regex_engine.domain.enums import RegexKind
-from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry import RegexRegistry
 
 
 class RegexRegistryWriter(Protocol):

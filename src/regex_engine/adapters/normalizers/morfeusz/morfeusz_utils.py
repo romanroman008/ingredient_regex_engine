@@ -3,8 +3,8 @@ import re
 import string
 from typing import Iterable, Optional, Sequence
 
-from regex_engine.src.regex_engine.application.dto import BaseWord, WordAnalysis, GeneratedWord
-from regex_engine.src.regex_engine.domain.models.grammar import GrammaticalGender, SentencePart
+from regex_engine.application.dto import BaseWord, WordAnalysis, GeneratedWord
+from regex_engine.domain.models.grammar import GrammaticalGender, SentencePart
 
 
 logger = logging.getLogger(__name__)

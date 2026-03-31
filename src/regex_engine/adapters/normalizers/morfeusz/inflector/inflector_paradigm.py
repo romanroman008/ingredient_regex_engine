@@ -1,10 +1,10 @@
 from typing import Sequence
 
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_inflectionally_independent
-from regex_engine.src.regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
-from regex_engine.src.regex_engine.application.dto import BaseWord, GeneratedWord
+from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_inflectionally_independent
+from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
+from regex_engine.application.dto import BaseWord, GeneratedWord
 
-from regex_engine.src.regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase
+from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase
 
 
 class InflectionParadigm:

@@ -1,7 +1,7 @@
-from regex_engine.src.regex_engine.domain.const import TRASH_RE, ENUM_TOKEN_RE, AND_CONJ_RE, OR_CONJ_RE, \
+from regex_engine.domain.const import TRASH_RE, ENUM_TOKEN_RE, AND_CONJ_RE, OR_CONJ_RE, \
     AND_CONJ_BETWEEN_NUMBERS_RE
-from regex_engine.src.regex_engine.domain.enums import RegexKind
-from regex_engine.src.regex_engine.ports.regex_registry import RegexRegistryReader
+from regex_engine.domain.enums import RegexKind
+from regex_engine.ports.regex_registry import RegexRegistryReader
 
 
 class RegexResolverDefault:

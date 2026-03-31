@@ -1,11 +1,11 @@
 import pytest
 
-from regex_engine.src.regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import get_most_occurred_value, \
+from regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import get_most_occurred_value, \
     choose_proper_parsing
 
-from regex_engine.src.regex_engine.domain.errors import AmbiguousParsingError
+from regex_engine.domain.errors import AmbiguousParsingError
 
-from regex_engine.src.regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto import ParsedIngredient
 
 
 class TestGetMostOccurredValue:

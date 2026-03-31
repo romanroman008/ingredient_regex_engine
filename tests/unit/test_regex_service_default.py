@@ -3,11 +3,11 @@ from unittest.mock import AsyncMock, create_autospec
 
 import pytest
 
-from regex_engine.src.regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
-from regex_engine.src.regex_engine.domain.enums import RegexKind, EnsureStatus
-from regex_engine.src.regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
-from regex_engine.src.regex_engine.ports.token_normalizer import TokenNormalizer
+from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
+from regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.ports.token_normalizer import TokenNormalizer
 
 
 @pytest.fixture()

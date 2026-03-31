@@ -3,16 +3,16 @@ from unittest.mock import AsyncMock
 import pytest
 from envs.django.Lib.unittest.mock import create_autospec
 
-from regex_engine.src.regex_engine.application.dto import ParsedIngredient
-from regex_engine.src.regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault
-from regex_engine.src.regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault
+from regex_engine.domain.enums import RegexKind, EnsureStatus
 
-from regex_engine.src.regex_engine.domain.errors import NameNotDetectedError
-from regex_engine.src.regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
-from regex_engine.src.regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.errors import NameNotDetectedError
+from regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
+from regex_engine.domain.models.regex_registry import RegexRegistry
 
-from regex_engine.src.regex_engine.ports.regex_registry import RegexRegistryRepository
-from regex_engine.src.regex_engine.ports.regex_service import RegexService
+from regex_engine.ports.regex_registry import RegexRegistryRepository
+from regex_engine.ports.regex_service import RegexService
 
 
 def _mk_service():
@@ -176,7 +176,7 @@ async def test_ensure_ingredient_included_in_registry__only_name(orchestrator):
 
 import pytest
 
-from regex_engine.src.regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureStatus
 
 
 @pytest.mark.asyncio
