@@ -57,7 +57,7 @@ class AgentIngredientParser:
                 logger.info("Successfully parsed %s", ingredient)
                 return parsed_ingredient
 
-            except (AmbiguousParsingError, ParsingAttemptFailedError) as e:
+            except Exception as e:
                 failures.append(AttemptFailure(attempt, e))
                 logger.warning(
                     "Could not parse %s. Attempt %s/%s. Retrying.",

@@ -2,7 +2,7 @@ from collections import Counter
 from typing import Any
 
 from regex_engine.application.dto import ParsedIngredient
-from regex_engine.domain.errors import AmbiguousParsingError
+from regex_engine.domain.errors import AmbiguousParsingError, NameNotDetectedError
 
 
 def get_most_occurred_value(values: list[Any]) -> Any:
@@ -43,12 +43,23 @@ def choose_proper_parsing(
         names.append(ingredient.name)
         extras.append(ingredient.extra)
 
+    raw_input = raw_input
+    amount = get_most_occurred_value(amounts)
+    unit_size = get_most_occurred_value(unit_sizes)
+    unit = get_most_occurred_value(units)
+    condition = get_most_occurred_value(conditions)
+    name = get_most_occurred_value(names)
+    extra = get_most_occurred_value(extras)
+
+    if not name:
+        raise NameNotDetectedError(ingredient=raw_input)
+
     return ParsedIngredient(
         raw_input=raw_input,
-        amount=get_most_occurred_value(amounts),
-        unit_size=get_most_occurred_value(unit_sizes),
-        unit=get_most_occurred_value(units),
-        condition=get_most_occurred_value(conditions),
-        name=get_most_occurred_value(names),
-        extra=get_most_occurred_value(extras),
+        amount=amount,
+        unit_size=unit_size,
+        unit=unit,
+        condition=condition,
+        name=name,
+        extra=extra,
     )

@@ -34,7 +34,7 @@ class IngredientFilterEngine:
     async def categorize(self, ingredient_stem: str):
         return self.categorizer.categorize(ingredient_stem)
 
-    def filter_records_with_conj(self, records: list[IngredientRecord]):
+    def filter_records_with_conj(self, records: list[IngredientRecord]) -> list[IngredientRecord]:
         clean = []
 
         for ingredient in records:
@@ -67,8 +67,7 @@ class IngredientFilterEngine:
             for record in records
             if not record.iterated
         ]
-        sorted = self._sort_by_count_desc(not_iterated)
-        return sorted[0]
+        return self._sort_by_count_desc(not_iterated)[0]
 
     def save_iterated_raw_ingredient(self, ingredients: list[IngredientRecord]):
         logger.info("Saving raw ...")
@@ -84,41 +83,34 @@ class IngredientFilterEngine:
         with path.open("w", encoding="utf-8") as f:
             json.dump(payload, f, ensure_ascii=False, indent=2)
 
-    async def filter
 
     async def filter_records(self, ingredients: list[IngredientRecord], max_rounds: int = 10):
-        total_records_number = len(ingredients)
-
         logger.info("Loading regexes ...")
         await self.regex_orchestrator.load()
 
 
-        records_left = ingredients
+        logger.info("Filtering records with conjunction ...")
+        records_left = self.filter_records_with_conj(ingredients)
 
         for i in range(max_rounds):
-
-            logger.info(f"Iteration %s of %s ...", i+1, max_rounds)
-            # Tu może się zapętlić, aczkolwiek 3 próby zapetlenia wynikałyby z ponownego podejscia do parsowania składnika
-            records_left = self.reduce_records(records_left)
-
-            ingredient = self.get_record_with_highest_count(records_left)
-
-            parsed_ingredient = await self.parser.parse(ingredient.name)
-
             try:
+                logger.info(f"Iteration %s of %s ...", i + 1, max_rounds)
+
+                records_left = self.reduce_records(records_left)
+
+                ingredient = self.get_record_with_highest_count(records_left)
+
+                parsed_ingredient = await self.parser.parse(ingredient.name)
+
                 await self.regex_orchestrator.ensure_ingredient_included_in_registry(parsed_ingredient)
 
-            except NameNotDetectedError:
-                logger.warning(f"Could not detect name in {ingredient.name}")
-                ingredient.attempts += 1
-                if ingredient.attempts >= 3:
-                    ingredient.iterated = True
-                    logger.error("Giving up on ingredient: %s, attempts: %s", ingredient.name, ingredient.attempts)
+            except Exception as e:
+                logger.exception("Error in iteration %s: %s", i + 1, e)
                 continue
 
-            else:
-                ingredient.iterated = True
 
         logger.info("Saving regexes ...")
         await self.regex_orchestrator.save()
         self.save_iterated_raw_ingredient(ingredients)
+
+

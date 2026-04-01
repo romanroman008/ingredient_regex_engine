@@ -14,3 +14,7 @@ class RegexService(Protocol):
     def registry(self) -> RegexRegistry: ...
     @registry.setter
     def registry(self, registry:RegexRegistry) -> None: ...
+
+
+
+
