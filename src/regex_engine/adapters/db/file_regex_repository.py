@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from pathlib import Path
 
 from settings import OUTPUT_DIR
@@ -43,11 +44,23 @@ class FileRegexRepository:
             raw = json.load(file)
 
             for item in raw:
-                regex_entry = RegexEntry(
-                    stem=item["stem"],
-                    variants=set(item["variants"])
-                )
-                entries.append(regex_entry)
+                try:
+                    regex_entry = RegexEntry(
+                        stem=item["stem"],
+                        variants=set(item["variants"])
+                    )
+                    entries.append(regex_entry)
+                except (ValueError, TypeError, re.error) as e:
+                    logger.warning(
+                        "Invalid regex entry. Skipping ...",
+                        extra={
+                            "stem": item["stem"],
+                            "variants": item["variants"],
+                            "error": str(e),
+                        }
+                    )
+                    continue
+
         logger.info(f"Loaded %s regexes.", len(entries))
         return RegexRegistry(entries)
 

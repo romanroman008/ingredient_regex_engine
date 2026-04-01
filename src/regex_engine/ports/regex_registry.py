@@ -2,6 +2,7 @@
 from typing import Protocol, Optional, Sequence
 
 from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.models.ingredient_regex_registry import IngredientRegexRegistry
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry import RegexRegistry
 
@@ -26,6 +27,11 @@ class RegexRegistryStore(Protocol):
 class RegexRegistryRepository(Protocol):
     async def load(self, kind: RegexKind) -> RegexRegistry: ...
     async def save(self, kind: RegexKind, registry: RegexRegistry) -> None: ...
+
+
+class IngredientRegexRegistryRepository(Protocol):
+    async def load(self) -> IngredientRegexRegistry: ...
+    async def save(self, registry: IngredientRegexRegistry) -> None: ...
 
 
 

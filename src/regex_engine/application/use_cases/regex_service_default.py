@@ -33,8 +33,6 @@ class RegexServiceDefault:
         self._registry = registry
 
 
-
-
     async def ensure_word_included_in_registry(self, word: str) -> EnsureWordResult:
         try:
             if not self.registry:
