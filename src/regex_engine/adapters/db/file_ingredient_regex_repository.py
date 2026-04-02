@@ -8,9 +8,7 @@ from regex_engine.domain.models.ingredient_entry import IngredientEntry
 from regex_engine.domain.models.ingredient_regex_registry import IngredientRegexRegistry
 from regex_engine.ports.regex_registry import IngredientRegexRegistryRepository
 from settings import OUTPUT_DIR
-from regex_engine.domain.enums import RegexKind, Category
-from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.enums import Category
 
 logger = logging.getLogger("ingredient_regex_reposity")
 

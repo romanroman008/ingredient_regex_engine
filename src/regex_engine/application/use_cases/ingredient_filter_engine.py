@@ -19,20 +19,16 @@ class IngredientFilterEngine:
     def __init__(self, regex_orchestrator: RegexOrchestrator,
                  regex_resolver: RegexResolver,
                  parser: IngredientParser,
-                 categorizer:Categorizer
                  ):
         self.regex_orchestrator = regex_orchestrator
         self.regex_resolver = regex_resolver
         self.parser = parser
-        self.categorizer = categorizer
 
     @staticmethod
     def _sort_by_count_desc(records: list[IngredientRecord]) -> list[IngredientRecord]:
         return sorted(records, key=lambda r: r.count, reverse=True)
 
 
-    async def categorize(self, ingredient_stem: str):
-        return self.categorizer.categorize(ingredient_stem)
 
     def filter_records_with_conj(self, records: list[IngredientRecord]) -> list[IngredientRecord]:
         clean = []

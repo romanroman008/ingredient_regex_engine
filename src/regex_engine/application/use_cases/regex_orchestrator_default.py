@@ -88,7 +88,8 @@ class RegexOrchestratorDefault:
         ensure_result = await self._ingredient_names.ensure_word_included_in_registry(ingredient.name)
 
         results = await asyncio.gather(
-            *(self._services[kind].ensure_word_included_in_registry(value) for kind, value in plan.items()),
+            *(self._services[kind].ensure_word_included_in_registry(value)
+              for kind, value in plan.items()),
         )
 
         results.append(ensure_result)
