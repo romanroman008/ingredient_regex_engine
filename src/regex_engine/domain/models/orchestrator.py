@@ -10,7 +10,7 @@ class EnsureWordResult:
     status:EnsureStatus
     stem:str
     word:str
-    exceptions:Optional[Exception] = None
+    exception:Optional[Exception] = None
 
 
 

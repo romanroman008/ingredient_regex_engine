@@ -69,7 +69,7 @@ class MorfeuszIngredientNameNormalizer:
         self._dependent_adjectives_inflectors:dict[int, InflectionParadigm] = {}
 
 
-    async def stem(self, ingredient_name:str):
+    async def stem(self, ingredient_name:str) -> str:
         self._prepare(ingredient_name)
 
         return self._inflect(self._stem_variant)

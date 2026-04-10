@@ -1,11 +1,8 @@
-import morfeusz2
+
 
 
 def main():
-    morf = morfeusz2.Morfeusz()
-    morf
-
-
+    print("Welcome to Inflector")
 
 
 

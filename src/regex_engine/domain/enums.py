@@ -39,3 +39,4 @@ class Category(str, Enum):
     ALCOHOL = "alkohol"
     NON_FOOD = "niejadalne"
     OTHER = "inne"
+    UNKNOWN = "nieznane"

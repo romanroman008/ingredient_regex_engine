@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from regex_engine.domain.models.ingredient_record import IngredientRecord
+
 
 class NameNotDetectedError(Exception):
     """Raised when a name cannot be detected."""
@@ -77,3 +79,24 @@ class IngredientParsingError(DetailedIngredientError):
 
 class CategorizingError(DetailedIngredientError):
     action_verb = "categorize"
+
+
+class ReducingRecordsError(Exception):
+    def __init__(self, message: str, *, record: IngredientRecord | None = None):
+        super().__init__(message)
+        self.record = record
+
+
+class RecordSelectionError(Exception):
+    def __init__(
+        self,
+        message: str,
+        *,
+        records_count: int,
+    ):
+        super().__init__(message)
+        self.records_count = records_count
+
+
+class ConfigurationError(Exception):
+    pass

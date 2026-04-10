@@ -21,8 +21,8 @@ class PandasInputAdapter:
         return isinstance(data, pd.DataFrame)
 
     def to_records(self, data: Any) -> list[IngredientRecord]:
-        if not isinstance(data, pd.DataFrame):
-            return []
+        if not self.supports(data):
+            raise TypeError(f"Unsupported data type: {type(data).__name__}")
 
         if self._name_column not in data.columns:
             raise ValueError(f"Missing column: {self._name_column}")

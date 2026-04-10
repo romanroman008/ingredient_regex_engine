@@ -1,0 +1,8 @@
+from typing import Protocol
+
+from regex_engine.domain.models.ingredient_record import IngredientRecord
+from regex_engine.domain.models.resolved_ingredient import ResolvedIngredient
+
+
+class FilterEngine(Protocol):
+    async def filter_records(self, ingredients: list[IngredientRecord], max_rounds:int) -> list[ResolvedIngredient]: ...

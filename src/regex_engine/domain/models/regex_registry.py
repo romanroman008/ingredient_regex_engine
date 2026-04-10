@@ -1,10 +1,12 @@
 from typing import Optional, Sequence, Iterable
 
+from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
 
 
 class RegexRegistry:
-    def __init__(self, entries:list[RegexEntry]) -> None:
+    def __init__(self, kind:RegexKind, entries:list[RegexEntry]) -> None:
+        self._kind = kind
         self._entries: list[RegexEntry] = entries
         self._by_stem: dict[str, RegexEntry] = self._create_by_stem()
 
@@ -15,6 +17,10 @@ class RegexRegistry:
                 raise ValueError(f"Duplicate regex stem detected: {entry.stem}")
             by_stem[entry.stem] = entry
         return by_stem
+
+    @property
+    def kind(self) -> RegexKind:
+        return self._kind
 
     def add_entry(self, entry: RegexEntry) -> None:
         if entry.stem in self._by_stem:

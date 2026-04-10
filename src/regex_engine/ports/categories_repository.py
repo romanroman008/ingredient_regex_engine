@@ -1,0 +1,6 @@
+from regex_engine.domain.enums import Category
+
+
+class CategoryRepository:
+    def load(self) -> dict[str, Category]: ...
+    def save(self, categorized_stems:dict[str, Category]) -> None: ...

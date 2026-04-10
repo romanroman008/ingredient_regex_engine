@@ -1,10 +1,12 @@
-
+from typing import Optional
 
 from pydantic import BaseModel
 
-from regex_engine.domain.enums import Category
+from dataclasses import field
+from regex_engine.domain.enums import Category, EnsureStatus
 from regex_engine.domain.models.grammar import GradationDegree, GrammaticalCase
 from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalGender
+from regex_engine.domain.models.orchestrator import EnsureWordResult
 
 
 class ParsedIngredient(BaseModel):
@@ -22,6 +24,8 @@ class CategorizedIngredient(BaseModel):
     name: str
     description: str
     reason: str
+
+
 
 
 from dataclasses import dataclass, field

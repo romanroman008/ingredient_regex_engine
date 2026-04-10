@@ -1,7 +1,7 @@
-from collections import defaultdict, Counter
+from collections import Counter
+from typing import Any
 
 from regex_engine.domain.models.ingredient_record import IngredientRecord
-from regex_engine.ports.token_normalizer import TokenNormalizer
 
 
 class StringInputAdapter:
@@ -12,33 +12,25 @@ class StringInputAdapter:
        if isinstance(data, str):
            return True
 
-       if isinstance(data, list) and all(isinstance(x, str) for x in data):
-           return True
-
        return False
 
     def to_records(self, data:Any) -> list[IngredientRecord]:
-        if isinstance(data, str):
-            lines = [
-                line.strip()
-                for line in data.splitlines()
-                if line.strip()
-            ]
+        if not self.supports(data):
+            raise TypeError(f"Unsupported data type: {type(data).__name__}")
 
-            counter = Counter(lines)
 
-            return [
-                IngredientRecord(name=name, count=count)
-                    for name, count in counter.items()
-            ]
+        lines = [
+            line.strip()
+            for line in data.splitlines()
+            if line.strip()
+        ]
 
-        if isinstance(data, list and all(isinstance(x, str) for x in data)):
-            counter = Counter(data)
+        counter = Counter(lines)
 
-            return [
-                IngredientRecord(name=name, count=count)
+        return [
+            IngredientRecord(name=name, count=count)
                 for name, count in counter.items()
-            ]
+        ]
 
-        return []
+
 
