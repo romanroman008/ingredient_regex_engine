@@ -5,7 +5,7 @@ from regex_engine.domain.enums import Category
 from regex_engine.adapters.categorizer.categorizing_vote import choose_proper_category
 from regex_engine.domain.errors import CategorizingAttemptFailedError, CategorizingError, \
     AttemptFailure, AmbiguousCategoryError
-from regex_engine.application.dto import CategorizedIngredient
+from regex_engine.application.dto.agent.categorized_ingredient import CategorizedIngredient
 from regex_engine.adapters.categorizer.agent_categorizer_client import AgentCategorizerClient
 
 logger = logging.getLogger("categorizer")

@@ -1,9 +1,10 @@
 import logging
 
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 from regex_engine.domain.enums import RegexKind
-from regex_engine.domain.errors import ReducingRecordsError, RecordSelectionError, IngredientParsingError
+from regex_engine.domain.errors import ReducingRecordsError, RecordSelectionError, IngredientParsingError, \
+    EveryRecordIterated
 
 from regex_engine.domain.models.ingredient_record import IngredientRecord
 from regex_engine.domain.models.orchestrator import EnsureIngredientResult
@@ -85,7 +86,7 @@ class IngredientFilterEngine:
                     continue
             except Exception as e:
                 raise ReducingRecordsError(
-                    f"Error occurred while trying to standarize {record.name}: {e}",
+                    f"Error occurred while trying to standardise {record.name}: {e}",
                     record=record,
                 ) from e
             remaining.append(record)
@@ -95,7 +96,7 @@ class IngredientFilterEngine:
 
         return remaining
 
-    def get_record_with_highest_count(
+    def get_first_non_iterated_record(
             self,
             records: list[IngredientRecord],
     ) -> IngredientRecord:
@@ -106,12 +107,12 @@ class IngredientFilterEngine:
         ]
 
         if not not_iterated:
-            raise RecordSelectionError(
+            raise EveryRecordIterated(
                 "No non-iterated records available",
-                records_count=len(records),
             )
 
         try:
+
             return self._sort_by_count_desc(not_iterated)[0]
         except Exception as e:
             raise RecordSelectionError(
@@ -124,6 +125,7 @@ class IngredientFilterEngine:
     async def filter_records(self, ingredients: list[IngredientRecord], max_rounds: int = 10) -> list[ResolvedIngredient]:
         logger.info("Filtering records with conjunction ...")
         records_left = self.filter_records_with_conj(ingredients)
+        records_left = self._sort_by_count_desc(records_left)
 
         result = []
         success = 0
@@ -135,14 +137,28 @@ class IngredientFilterEngine:
 
                 records_left = self.reduce_records(records_left)
 
-                ingredient = self.get_record_with_highest_count(records_left)
+                ingredient = self.get_first_non_iterated_record(records_left)
+
+                ingredient.iterated = True
 
                 parsed_ingredient = await self.parser.parse(ingredient.name)
 
                 ensure_result = await self.regex_orchestrator.ensure_ingredient_included_in_registry(parsed_ingredient)
-                result.append(build_resolved_ingredient(ingredient=parsed_ingredient, ensure_result=ensure_result))
-                logger.info("Iteration %s/%s completed successfully", i, max_rounds)
-                success += 1
+
+                resolved_ingredient = build_resolved_ingredient(ingredient=parsed_ingredient, ensure_result=ensure_result)
+                result.append(resolved_ingredient)
+
+                if resolved_ingredient.issues:
+                    logger.warning("Issues occurred in iteration %s/%s", i, max_rounds)
+                    logger.warning(resolved_ingredient.issues)
+                    failed += 1
+
+                else:
+                    logger.info("Iteration %s/%s completed successfully", i, max_rounds)
+                    success += 1
+
+            except EveryRecordIterated:
+                break
 
             except (RecordSelectionError, ReducingRecordsError) as e:
                 logger.exception("Error in iteration %s: %s", i + 1, e)

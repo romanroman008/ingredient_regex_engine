@@ -5,7 +5,7 @@ from regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import ge
 
 from regex_engine.domain.errors import AmbiguousParsingError
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 
 
 class TestGetMostOccurredValue:

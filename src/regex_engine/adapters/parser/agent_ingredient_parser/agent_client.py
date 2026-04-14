@@ -3,7 +3,7 @@ import asyncio
 from agents import Agent, Runner, trace
 
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 
 PARSER_PROMPT = """
 Jesteś parserem składników. Twoim zadaniem jest ustandaryzowanie części zdań opisujących składnik do odpowiednich kategorii:
@@ -13,6 +13,7 @@ UNIT - jednostka ilości składnika (łyżka, gram, g, paczka, listek, etc)
 CONDITION - stan składnika, do którego ma doprowadzić go kucharz (posiekany, gotowanych, schłodzonego)
 NAME - pełna nazwa składnika, powinna zawierać też stan produktu, jaki zapewniony jest przez sprzedawcę (suszone pomidory, czerwona fasola, wędzonego boczku)
 EXTRA - dodatkowe informacje znajdujące się w nawiasie
+Jeśli nie widzisz wyraźnej jednostki typu: gram, łyżeczka, etc. zostaw ją pustą
 Zwróć tylko i wyłącznie poprawny JSON.
 Przykłady:
 INPUT:
@@ -36,7 +37,7 @@ OUTPUT:
     "unit_adjective": "",
     "unit": "ml",
     "condition": "",
-    "name": "bulionu jarzynowego",f
+    "name": "bulionu jarzynowego",
     "extra": "lub wołowego"
 }
 INPUT:
@@ -85,6 +86,18 @@ OUTPUT:
     "unit": "kawałek",
     "condition": "",
     "name": "mango",
+    "extra": ""
+}
+INPUT:
+"śmietanka kremówka"
+OUTPUT:
+{
+    "full_input": "śmietanka kremówka",
+    "amount": 1,
+    "unit_adjective": "",
+    "unit": "",
+    "condition": "",
+    "name": "śmietanka kremówka",
     "extra": ""
 }
 """

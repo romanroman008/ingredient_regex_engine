@@ -11,9 +11,11 @@ from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import filter_non
 
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_cooking_related, \
     tuples_to_word_analysis
+from regex_engine.application.dto.analysed_phrase import AnalysedPhrase
+from regex_engine.application.dto.positioned_word import PositionedWord
 from regex_engine.domain.models.grammar import SentencePart, GrammaticalCase, GrammaticalNumber, \
     GrammaticalGender
-from regex_engine.application.dto import WordAnalysis, AnalysedPhrase, PositionedWord
+from regex_engine.application.dto.word_analysis import WordAnalysis
 
 logger = logging.getLogger("phrase_analyzer")
 

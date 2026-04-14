@@ -2,9 +2,8 @@
 from typing import Protocol, Optional, Sequence
 
 from regex_engine.domain.enums import RegexKind
-from regex_engine.domain.models.ingredient_regex_registry import IngredientRegexRegistry
 from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
+
 
 
 class RegexRegistryWriter(Protocol):
@@ -22,14 +21,12 @@ class RegexRegistryReader(Protocol):
     def swap_match(self, text:str, replacement: str) -> str: ...
 
 
+class RegexRegistry(RegexRegistryWriter, RegexRegistryReader, Protocol):
+    pass
+
 class RegexRegistryRepository(Protocol):
     def load(self, kind: RegexKind) -> RegexRegistry: ...
     def save(self, registry: RegexRegistry) -> None: ...
-
-
-class IngredientRegexRegistryRepository(Protocol):
-    def load(self) -> IngredientRegexRegistry: ...
-    def save(self, registry: IngredientRegexRegistry) -> None: ...
 
 
 

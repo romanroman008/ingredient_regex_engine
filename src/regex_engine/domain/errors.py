@@ -97,6 +97,9 @@ class RecordSelectionError(Exception):
         super().__init__(message)
         self.records_count = records_count
 
+class EveryRecordIterated(Exception):
+    pass
+
 
 class ConfigurationError(Exception):
     pass

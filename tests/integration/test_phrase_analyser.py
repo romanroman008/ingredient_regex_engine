@@ -4,7 +4,7 @@ import pytest
 
 from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 
-from regex_engine.application.dto import AnalysedPhrase, BaseWord, PositionedWord
+from regex_engine.application.dto.analysed_phrase import AnalysedPhrase, BaseWord, PositionedWord
 
 from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase, GrammaticalGender, \
     GradationDegree

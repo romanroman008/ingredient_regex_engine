@@ -2,7 +2,8 @@ from typing import Sequence
 
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import is_word_inflectionally_independent
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
-from regex_engine.application.dto import BaseWord, GeneratedWord
+from regex_engine.application.dto.base_word import BaseWord
+from regex_engine.application.dto.generated_word import GeneratedWord
 
 from regex_engine.domain.models.grammar import SentencePart, GrammaticalNumber, GrammaticalCase
 
@@ -14,6 +15,8 @@ class InflectionParadigm:
 
     def inflect(self, request: InflectionRequest) -> BaseWord:
         match self.word.part:
+            case SentencePart.ABBREVIATION:
+                return self._inflect_abbreviation(request.number, request.case)
             case SentencePart.NOUN:
                 return self._inflect_noun(request.number, request.case)
             case SentencePart.ADJECTIVE:
@@ -22,6 +25,15 @@ class InflectionParadigm:
                 return self._inflect_passive_adjectival_participle(request)
             case _:
                 raise NotImplementedError(f"Unsupported part: {self.word.part}")
+
+    def _inflect_abbreviation(self,
+                              number: GrammaticalNumber,
+                                case: GrammaticalCase) -> BaseWord:
+        for variation in self.variations:
+            if (case in variation.case and
+                number in variation.number):
+                return variation
+        raise ValueError(f"Cannot inflect abbreviation: {self.word}")
 
     def _inflect_noun(
         self,
@@ -44,7 +56,7 @@ class InflectionParadigm:
             ):
                 return variation
 
-        raise ValueError(f"Cannot inflect word: {self.word}")
+        raise ValueError(f"Cannot inflect noun: {self.word}")
 
     def _inflect_adjective(self, request: InflectionRequest) -> BaseWord:
         for variation in self.variations:
@@ -57,7 +69,7 @@ class InflectionParadigm:
             ):
                 return variation
 
-        raise ValueError(f"Cannot inflect word: {self.word}")
+        raise ValueError(f"Cannot inflect adjective: {self.word}")
 
     def _inflect_passive_adjectival_participle(
         self,
@@ -74,4 +86,4 @@ class InflectionParadigm:
             ):
                 return variation
 
-        raise ValueError(f"Cannot inflect word: {self.word}")
+        raise ValueError(f"Cannot inflect passive adjectival participle: {self.word}")

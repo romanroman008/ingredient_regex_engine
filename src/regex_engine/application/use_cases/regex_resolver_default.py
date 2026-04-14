@@ -4,6 +4,13 @@ from regex_engine.domain.enums import RegexKind
 from regex_engine.ports.regex_registry import RegexRegistryReader
 
 
+def is_number(s:str) -> bool:
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
 class RegexResolverDefault:
     def __init__(
             self,
@@ -34,9 +41,9 @@ class RegexResolverDefault:
         remainders = ENUM_TOKEN_RE.sub("", standardized).strip()
         clean = TRASH_RE.sub("", remainders).strip()
 
-        if clean:
-            return False
-        return True
+        if not clean or is_number(clean):
+            return True
+        return False
 
     def get_remainder(self, ingredient: str) -> str:
         standardized = self.standardize(ingredient)

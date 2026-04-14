@@ -1,7 +1,13 @@
+import logging
+
 from regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
+from regex_engine.adapters.categorizer.categorizer_service_default import CategorizerServiceDefault
+from regex_engine.adapters.db.category.file_category_repository import FileCategoryRepository
+from regex_engine.adapters.db.regex.file_categorized_ingredient_regex_repository import \
+    FileCategorizedIngredientRegexRepository
 from regex_engine.adapters.input_adapters.pandas_input_adapter import PandasInputAdapter
 from regex_engine.adapters.input_adapters.string_input_adapter import StringInputAdapter
-from regex_engine.adapters.input_adapters.string_iterable_input_adapter import StringIterableInputAdapter
+from regex_engine.adapters.input_adapters.string_iterable_input_adapter import StringListInputAdapter
 from regex_engine.adapters.normalizers.morfeusz.adjective_normalizer import MorfeuszAdjectiveNormalizer
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 from regex_engine.adapters.normalizers.morfeusz.ingredient_name import MorfeuszIngredientNameNormalizer
@@ -14,16 +20,39 @@ from regex_engine.application.use_cases.input_router import InputRouter
 from regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault
 from regex_engine.application.use_cases.regex_resolver_default import RegexResolverDefault
 from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
-from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.enums import RegexKind, Category
 
 import morfeusz2
 
-from regex_engine.domain.models.registry_container import RegistryContainer
-from regex_engine.ports.regex_registry import RegexRegistryRepository, IngredientRegexRegistryRepository
+from regex_engine.domain.models.registry_container import RegistryContainerReader, RegistryContainer, \
+    RegistryContainerWriter
+
+from regex_engine.ports.categorizer_service import CategorizerService
+from regex_engine.ports.regex_registry import RegexRegistryRepository
+from settings import configure_logging
+
+logger = logging.getLogger("bootstrap")
 
 
-def load_regex_registries(regex_repository:RegexRegistryRepository,
-                          categorized_ingredients_repository:IngredientRegexRegistryRepository) -> RegistryContainer:
+def create_ingredient_regex_engine() -> IngredientRegexEngine:
+    configure_logging()
+    logger.info("Creating IngredientRegexEngine ...")
+    category_repository = FileCategoryRepository()
+    categorized_ingredients = category_repository.load()
+    regex_repository = FileCategorizedIngredientRegexRepository(categorized_ingredients)
+    categorizer = AgentCategorizer()
+    categorizer_service = CategorizerServiceDefault(categorizer=categorizer,
+                                                    categorized_ingredients=categorized_ingredients,
+                                                    repository=category_repository)
+    engine = _build_engine(regex_repository=regex_repository,
+                         categorizer_service=categorizer_service)
+    logger.info("Successfully created IngredientRegexEngine")
+    return engine
+
+
+
+
+def _load_regex_registries(regex_repository:RegexRegistryRepository) -> RegistryContainer:
     ingredient_registry = regex_repository.load(RegexKind.INGREDIENT_NAME)
     unit_registry = regex_repository.load(RegexKind.UNIT)
     unit_size_registry = regex_repository.load(RegexKind.UNIT_SIZE)
@@ -31,9 +60,16 @@ def load_regex_registries(regex_repository:RegexRegistryRepository,
     or_conjunctions_registry = regex_repository.load(RegexKind.OR_CONJUNCTIONS)
     and_conjunctions_registry = regex_repository.load(RegexKind.AND_CONJUNCTIONS)
 
-    categorized_ingredients_registry = categorized_ingredients_repository.load()
+    reader_container = RegistryContainerReader(
+        ingredient_registry=ingredient_registry,
+        unit_registry=unit_registry,
+        unit_size_registry=unit_size_registry,
+        condition_registry=condition_registry,
+        or_conjunctions_registry=or_conjunctions_registry,
+        and_conjunctions_registry=and_conjunctions_registry,
+    )
 
-    return RegistryContainer(
+    writer_container = RegistryContainerWriter(
         ingredient_registry=ingredient_registry,
         unit_registry=unit_registry,
         unit_size_registry=unit_size_registry,
@@ -43,7 +79,18 @@ def load_regex_registries(regex_repository:RegexRegistryRepository,
     )
 
 
-def build_engine(registries:RegistryContainer):
+    return RegistryContainer(
+      reader=reader_container,
+        writer=writer_container,
+
+    )
+
+
+def _build_engine(regex_repository:RegexRegistryRepository,
+                  categorizer_service:CategorizerService):
+
+    registries = _load_regex_registries(regex_repository)
+
     morfeusz = morfeusz2.Morfeusz()
 
     inflector = Inflector(morfeusz)
@@ -54,36 +101,40 @@ def build_engine(registries:RegistryContainer):
     unit_size_normalizer = MorfeuszAdjectiveNormalizer(inflector=inflector,morfeusz=morfeusz)
     ingredient_condition_normalizer = MorfeuszAdjectiveNormalizer(inflector=inflector,morfeusz=morfeusz)
 
-    ingredient_service = RegexServiceDefault(RegexKind.INGREDIENT_NAME,
-                                             ingredient_normalizer,
-                                             registries.ingredient_registry)
+    ingredient_service = RegexServiceDefault(normalizer=ingredient_normalizer,
+                                             regex_registry_writer=registries.writer.ingredient_registry,
+                                             regex_registry_reader=registries.reader.ingredient_registry,)
 
-    unit_service = RegexServiceDefault(RegexKind.UNIT,
-                                       unit_normalizer,
-                                       registries.unit_registry)
+    unit_service = RegexServiceDefault(normalizer=unit_normalizer,
+                                       regex_registry_reader=registries.reader.unit_registry,
+                                       regex_registry_writer=registries.writer.unit_registry)
 
-    unit_size_service = RegexServiceDefault(RegexKind.UNIT_SIZE,
-                                            unit_size_normalizer,
-                                            registries.unit_size_registry)
+    unit_size_service = RegexServiceDefault(normalizer=unit_size_normalizer,
+                                            regex_registry_reader=registries.reader.unit_registry,
+                                            regex_registry_writer=registries.writer.unit_registry)
 
-    ingredient_condition_service = RegexServiceDefault(RegexKind.INGREDIENT_CONDITION,
-                                                       ingredient_condition_normalizer,
-                                                       registries.condition_registry)
+    ingredient_condition_service = RegexServiceDefault(normalizer=ingredient_condition_normalizer,
+                                                       regex_registry_reader=registries.reader.condition_registry,
+                                                       regex_registry_writer=registries.writer.condition_registry)
+
+    services_by_kind = {
+        registries.reader.ingredient_registry.kind: ingredient_service,
+        registries.reader.unit_registry.kind: unit_service,
+        registries.reader.unit_size_registry.kind: unit_size_service,
+        registries.reader.condition_registry.kind: ingredient_condition_service
+    }
 
     regex_orchestrator = RegexOrchestratorDefault(
-        ingredient_names=ingredient_service,
-        ingredient_conditions=ingredient_condition_service,
-        unit_sizes=unit_size_service,
-        units=unit_service,
+        services_by_kind=services_by_kind,
     )
 
     resolver = RegexResolverDefault(
-        ingredient_names=registries.ingredient_registry,
-        ingredient_conditions=registries.condition_registry,
-        unit_sizes=registries.unit_size_registry,
-        units=registries.unit_registry,
-        or_conjunctions=registries.or_conjunctions_registry,
-        and_conjunctions=registries.and_conjunctions_registry,
+        ingredient_names=registries.reader.ingredient_registry,
+        ingredient_conditions=registries.reader.condition_registry,
+        unit_sizes=registries.reader.unit_size_registry,
+        units=registries.reader.unit_registry,
+        or_conjunctions=registries.reader.or_conjunctions_registry,
+        and_conjunctions=registries.reader.and_conjunctions_registry,
     )
 
     parser = AgentIngredientParser()
@@ -94,16 +145,17 @@ def build_engine(registries:RegistryContainer):
         parser=parser
     )
 
-    categorizer = AgentCategorizer()
 
-    input_adapters = [StringInputAdapter(), StringIterableInputAdapter(), PandasInputAdapter()]
+
+    input_adapters = [StringInputAdapter(), StringListInputAdapter(), PandasInputAdapter()]
 
     input_router_adapter = InputRouter(*input_adapters)
 
     return IngredientRegexEngine(filter_engine=filter_engine,
-                                 categorizer=categorizer,
-                                 input_adapter=input_router_adapter)
-
+                                 input_adapter=input_router_adapter,
+                                 regex_repository=regex_repository,
+                                 registries=registries.reader,
+                                 categorizer_service=categorizer_service)
 
 
 

@@ -2,7 +2,7 @@ import asyncio
 
 import pytest
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.parsed_ingredient import ParsedIngredient
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_ingredient_parser import AgentIngredientParser
 
 
@@ -119,15 +119,47 @@ async def test_real_agent_parsing():
     parser = AgentIngredientParser()
 
     result = await asyncio.wait_for(
-        parser.parse("150 g masła, schłodzonego"),
+        parser.parse("2 śmietanki kremówki"),
         timeout=30,
     )
 
-    assert result.name == "masła"
-    assert result.amount == 150
-    assert result.unit == "g"
+    assert result.name == "śmietanki kremówki"
+    assert result.amount == 2
+    assert result.unit == ""
     assert result.unit_size == ""
-    assert result.condition == "schłodzonego"
+    assert result.condition == ""
+
+@pytest.mark.asyncio
+@pytest.mark.live_ai
+async def test_real_agent_parsing_2():
+    parser = AgentIngredientParser()
+
+    result = await asyncio.wait_for(
+        parser.parse("2 jajka kurki zielononóżki"),
+        timeout=30,
+    )
+
+    assert result.name == "jajka kurki zielononóżki"
+    assert result.amount == 2
+    assert result.unit == ""
+    assert result.unit_size == ""
+    assert result.condition == ""
+
+@pytest.mark.asyncio
+@pytest.mark.live_ai
+async def test_real_agent_parsing_2():
+    parser = AgentIngredientParser()
+
+    result = await asyncio.wait_for(
+        parser.parse("korzeń imbiru"),
+        timeout=30,
+    )
+
+    assert result.name == "korzeń imbiru"
+    assert result.amount == 1
+    assert result.unit == ""
+    assert result.unit_size == ""
+    assert result.condition == ""
 
 @pytest.mark.asyncio
 @pytest.mark.live_ai

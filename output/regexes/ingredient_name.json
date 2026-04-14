@@ -1,0 +1,336 @@
+{
+  "nieznane": [
+    {
+      "stem": "cebula",
+      "variants": [
+        "cebul",
+        "cebula",
+        "cebulami",
+        "cebule",
+        "cebuli",
+        "cebulą",
+        "cebulę"
+      ],
+      "pattern": "\\b(?:cebulami|cebule|cebulę|cebula|cebuli|cebulą|cebul)\\b"
+    },
+    {
+      "stem": "chleb",
+      "variants": [
+        "chleb",
+        "chleba",
+        "chlebami",
+        "chlebem",
+        "chleby",
+        "chlebów"
+      ],
+      "pattern": "\\b(?:chlebami|chlebów|chlebem|chleba|chleby|chleb)\\b"
+    },
+    {
+      "stem": "cukier",
+      "variants": [
+        "cukier",
+        "cukrami",
+        "cukrem",
+        "cukru",
+        "cukry",
+        "cukrów"
+      ],
+      "pattern": "\\b(?:cukrami|cukier|cukrem|cukrów|cukry|cukru)\\b"
+    },
+    {
+      "stem": "cukier_wanilinowy",
+      "variants": [
+        "cukier wanilinowy",
+        "cukrami wanilinowymi",
+        "cukrem wanilinowym",
+        "cukru wanilinowego",
+        "cukry wanilinowe",
+        "cukrów wanilinowych"
+      ],
+      "pattern": "\\b(?:cukrami\\ wanilinowymi|cukrów\\ wanilinowych|cukru\\ wanilinowego|cukrem\\ wanilinowym|cukier\\ wanilinowy|cukry\\ wanilinowe)\\b"
+    },
+    {
+      "stem": "cynamon",
+      "variants": [
+        "cynamon",
+        "cynamonami",
+        "cynamonem",
+        "cynamonu",
+        "cynamony",
+        "cynamonów"
+      ],
+      "pattern": "\\b(?:cynamonami|cynamonów|cynamonem|cynamonu|cynamony|cynamon)\\b"
+    },
+    {
+      "stem": "czosnek",
+      "variants": [
+        "czosnek",
+        "czosnkami",
+        "czosnki",
+        "czosnkiem",
+        "czosnku",
+        "czosnków"
+      ],
+      "pattern": "\\b(?:czosnkiem|czosnkami|czosnków|czosnki|czosnku|czosnek)\\b"
+    },
+    {
+      "stem": "ingredient",
+      "variants": [
+        "ingredient",
+        "ingredientami",
+        "ingredientem",
+        "ingredientu",
+        "ingredienty",
+        "ingredientów"
+      ],
+      "pattern": "\\b(?:ingredientami|ingredientem|ingredientów|ingredientu|ingredienty|ingredient)\\b"
+    },
+    {
+      "stem": "jajko",
+      "variants": [
+        "jajek",
+        "jajka",
+        "jajkami",
+        "jajkiem",
+        "jajko"
+      ],
+      "pattern": "\\b(?:jajkiem|jajkami|jajka|jajek|jajko)\\b"
+    },
+    {
+      "stem": "jajko_kurka_zielononóżki",
+      "variants": [
+        "jajek kurek zielononóżki",
+        "jajka kurek zielononóżki",
+        "jajka kurki zielononóżki",
+        "jajkami kurek zielononóżki",
+        "jajkami kurkami zielononóżki",
+        "jajkiem kurki zielononóżki",
+        "jajkiem kurką zielononóżki",
+        "jajko kurka zielononóżki",
+        "jajko kurki zielononóżki",
+        "jajko kurkę zielononóżki"
+      ],
+      "pattern": "\\b(?:jajkami\\ kurkami\\ zielononóżki|jajkiem\\ kurki\\ zielononóżki|jajkiem\\ kurką\\ zielononóżki|jajkami\\ kurek\\ zielononóżki|jajko\\ kurka\\ zielononóżki|jajka\\ kurki\\ zielononóżki|jajek\\ kurek\\ zielononóżki|jajko\\ kurkę\\ zielononóżki|jajka\\ kurek\\ zielononóżki|jajko\\ kurki\\ zielononóżki)\\b"
+    },
+    {
+      "stem": "marchewka",
+      "variants": [
+        "marchewek",
+        "marchewka",
+        "marchewkami",
+        "marchewki",
+        "marchewką",
+        "marchewkę"
+      ],
+      "pattern": "\\b(?:marchewkami|marchewkę|marchewek|marchewka|marchewki|marchewką)\\b"
+    },
+    {
+      "stem": "masło",
+      "variants": [
+        "maseł",
+        "masła",
+        "masłami",
+        "masłem",
+        "masło"
+      ],
+      "pattern": "\\b(?:masłami|masłem|masło|masła|maseł)\\b"
+    },
+    {
+      "stem": "miód",
+      "variants": [
+        "miodami",
+        "miodem",
+        "miodu",
+        "miody",
+        "miodów",
+        "miód"
+      ],
+      "pattern": "\\b(?:miodami|miodem|miodów|miody|miodu|miód)\\b"
+    },
+    {
+      "stem": "mąka_pszenna_typu_2",
+      "variants": [
+        "mąk pszennych typu 2",
+        "mąka pszenna typu 2",
+        "mąkami pszennymi typu 2",
+        "mąki pszenne typu 2",
+        "mąki pszennej typu 2",
+        "mąką pszenną typu 2",
+        "mąkę pszenną typu 2"
+      ],
+      "pattern": "\\b(?:mąkami\\ pszennymi\\ typu\\ 2|mąk\\ pszennych\\ typu\\ 2|mąki\\ pszennej\\ typu\\ 2|mąka\\ pszenna\\ typu\\ 2|mąkę\\ pszenną\\ typu\\ 2|mąki\\ pszenne\\ typu\\ 2|mąką\\ pszenną\\ typu\\ 2)\\b"
+    },
+    {
+      "stem": "natka_pietruszka",
+      "variants": [
+        "natek pietruszek",
+        "natka pietruszka",
+        "natka pietruszki",
+        "natkami pietruszek",
+        "natkami pietruszkami",
+        "natki pietruszek",
+        "natki pietruszki",
+        "natką pietruszki",
+        "natką pietruszką",
+        "natkę pietruszki",
+        "natkę pietruszkę"
+      ],
+      "pattern": "\\b(?:natkami\\ pietruszkami|natkami\\ pietruszek|natkę\\ pietruszkę|natką\\ pietruszki|natką\\ pietruszką|natkę\\ pietruszki|natek\\ pietruszek|natka\\ pietruszka|natka\\ pietruszki|natki\\ pietruszek|natki\\ pietruszki)\\b"
+    },
+    {
+      "stem": "olej_roślinny",
+      "variants": [
+        "olej roślinny",
+        "olejami roślinnymi",
+        "oleje roślinne",
+        "olejem roślinnym",
+        "oleju roślinnego",
+        "olejów roślinnych"
+      ],
+      "pattern": "\\b(?:olejami\\ roślinnymi|olejów\\ roślinnych|oleju\\ roślinnego|olejem\\ roślinnym|oleje\\ roślinne|olej\\ roślinny)\\b"
+    },
+    {
+      "stem": "oliwa",
+      "variants": [
+        "oliw",
+        "oliwa",
+        "oliwami",
+        "oliwy",
+        "oliwą",
+        "oliwę"
+      ],
+      "pattern": "\\b(?:oliwami|oliwa|oliwą|oliwę|oliwy|oliw)\\b"
+    },
+    {
+      "stem": "pieprz",
+      "variants": [
+        "pieprz",
+        "pieprzami",
+        "pieprze",
+        "pieprzem",
+        "pieprzu",
+        "pieprzy"
+      ],
+      "pattern": "\\b(?:pieprzami|pieprzem|pieprze|pieprzy|pieprzu|pieprz)\\b"
+    },
+    {
+      "stem": "proszek_do_pieczenia",
+      "variants": [
+        "proszek do pieczenia",
+        "proszka do pieczenia",
+        "proszkami do pieczenia",
+        "proszki do pieczenia",
+        "proszkiem do pieczenia",
+        "proszków do pieczenia"
+      ],
+      "pattern": "\\b(?:proszkiem\\ do\\ pieczenia|proszkami\\ do\\ pieczenia|proszków\\ do\\ pieczenia|proszek\\ do\\ pieczenia|proszka\\ do\\ pieczenia|proszki\\ do\\ pieczenia)\\b"
+    },
+    {
+      "stem": "sok_z_cytryny",
+      "variants": [
+        "sok z cytryny",
+        "sokami z cytryny",
+        "soki z cytryny",
+        "sokiem z cytryny",
+        "soku z cytryny",
+        "soków z cytryny"
+      ],
+      "pattern": "\\b(?:sokiem\\ z\\ cytryny|sokami\\ z\\ cytryny|soków\\ z\\ cytryny|soki\\ z\\ cytryny|soku\\ z\\ cytryny|sok\\ z\\ cytryny)\\b"
+    },
+    {
+      "stem": "sol",
+      "variants": [
+        "sol"
+      ],
+      "pattern": "\\b(?:sol)\\b"
+    },
+    {
+      "stem": "sos_sojowy",
+      "variants": [
+        "sos sojowy",
+        "sosami sojowymi",
+        "sosem sojowym",
+        "sosu sojowego",
+        "sosy sojowe",
+        "sosów sojowych"
+      ],
+      "pattern": "\\b(?:sosami\\ sojowymi|sosów\\ sojowych|sosu\\ sojowego|sosem\\ sojowym|sosy\\ sojowe|sos\\ sojowy)\\b"
+    },
+    {
+      "stem": "suszone_oregano",
+      "variants": [
+        "suszone oregano",
+        "suszonego oregano",
+        "suszonych oregano",
+        "suszonym oregano",
+        "suszonymi oregano"
+      ],
+      "pattern": "\\b(?:suszonymi\\ oregano|suszonego\\ oregano|suszonych\\ oregano|suszonym\\ oregano|suszone\\ oregano)\\b"
+    },
+    {
+      "stem": "szczypiorek",
+      "variants": [
+        "szczypiorek",
+        "szczypiorkami",
+        "szczypiorki",
+        "szczypiorkiem",
+        "szczypiorku",
+        "szczypiorków"
+      ],
+      "pattern": "\\b(?:szczypiorkiem|szczypiorkami|szczypiorków|szczypiorki|szczypiorku|szczypiorek)\\b"
+    },
+    {
+      "stem": "sól",
+      "variants": [
+        "solami",
+        "sole",
+        "soli",
+        "solą",
+        "sól"
+      ],
+      "pattern": "\\b(?:solami|soli|solą|sole|sól)\\b"
+    },
+    {
+      "stem": "ziemniak",
+      "variants": [
+        "ziemniak",
+        "ziemniaka",
+        "ziemniakami",
+        "ziemniaki",
+        "ziemniakiem",
+        "ziemniaków"
+      ],
+      "pattern": "\\b(?:ziemniakiem|ziemniakami|ziemniaków|ziemniaka|ziemniaki|ziemniak)\\b"
+    },
+    {
+      "stem": "śmietanka_kremówka",
+      "variants": [
+        "śmietanek kremówek",
+        "śmietanka kremówka",
+        "śmietanka kremówki",
+        "śmietankami kremówek",
+        "śmietankami kremówkami",
+        "śmietanki kremówek",
+        "śmietanki kremówki",
+        "śmietanką kremówki",
+        "śmietanką kremówką",
+        "śmietankę kremówki",
+        "śmietankę kremówkę"
+      ],
+      "pattern": "\\b(?:śmietankami\\ kremówkami|śmietankami\\ kremówek|śmietanka\\ kremówka|śmietanką\\ kremówką|śmietanki\\ kremówki|śmietankę\\ kremówkę|śmietanka\\ kremówki|śmietanką\\ kremówki|śmietanki\\ kremówek|śmietankę\\ kremówki|śmietanek\\ kremówek)\\b"
+    },
+    {
+      "stem": "świeża_kolendra",
+      "variants": [
+        "świeża kolendra",
+        "świeże kolendry",
+        "świeżej kolendry",
+        "świeżych kolendr",
+        "świeżymi kolendrami",
+        "świeżą kolendrą",
+        "świeżą kolendrę"
+      ],
+      "pattern": "\\b(?:świeżymi\\ kolendrami|świeżych\\ kolendr|świeżej\\ kolendry|świeża\\ kolendra|świeże\\ kolendry|świeżą\\ kolendrę|świeżą\\ kolendrą)\\b"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import join_tokens
-from regex_engine.application.dto import AnalysedPhrase
+from regex_engine.application.dto.analysed_phrase import AnalysedPhrase
 
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 

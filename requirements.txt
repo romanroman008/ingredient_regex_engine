@@ -3,3 +3,5 @@ openai-agents>=0.2.0
 python-dotenv==1.2.2
 morfeusz2>=1.99
 pandas
+psycopg[binary]
+psycopg2-binary

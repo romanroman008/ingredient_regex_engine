@@ -6,18 +6,18 @@ from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_
     is_word_cooking_related
 
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
-from regex_engine.application.dto import BaseWord
+from regex_engine.application.dto.base_word import BaseWord
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request import InflectionRequest
 
 from regex_engine.domain.models.grammar import GrammaticalNumber, GrammaticalCase, SentencePart
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
 
 
-def _choose_first_noun(words:list[BaseWord]) -> BaseWord:
+def _extract_unit(words:list[BaseWord]) -> BaseWord:
     for word in words:
         part = word.part
-        if (part == SentencePart.NOUN and
-            is_word_cooking_related(word)
+        if ((part == SentencePart.NOUN and
+            is_word_cooking_related(word)) or part == SentencePart.ABBREVIATION
         ):
             return word
 
@@ -58,7 +58,7 @@ class MorfeuszUnitNormalizer:
 
     def _prepare(self, unit:str):
         converted = self._convert_to_single_base_word(unit)
-        unit_word = _choose_first_noun(converted)
+        unit_word = _extract_unit(converted)
         self._unit = unit_word
         self._unit_inflector = self._inflector.prepare(unit_word)
 

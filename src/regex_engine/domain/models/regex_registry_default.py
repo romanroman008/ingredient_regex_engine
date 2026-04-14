@@ -2,9 +2,10 @@ from typing import Optional, Sequence, Iterable
 
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.ports.regex_registry import RegexRegistry
 
 
-class RegexRegistry:
+class RegexRegistryDefault(RegexRegistry):
     def __init__(self, kind:RegexKind, entries:list[RegexEntry]) -> None:
         self._kind = kind
         self._entries: list[RegexEntry] = entries

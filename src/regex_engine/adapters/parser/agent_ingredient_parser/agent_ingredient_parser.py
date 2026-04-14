@@ -4,7 +4,7 @@ import logging
 from regex_engine.domain.errors import ParsingAttemptFailedError, AttemptFailure, \
     AmbiguousParsingError, IngredientParsingError
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_client import AgentParserClient
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 from regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import choose_proper_parsing
 
 logger = logging.getLogger("ingredient_parser")
@@ -54,7 +54,7 @@ class AgentIngredientParser:
         for attempt in range(1, self.max_retries + 1):
             try:
                 parsed_ingredient = await self._parse_once(ingredient)
-                logger.info("Successfully parsed %s", ingredient)
+                logger.info("Successfully parsed %s", parsed_ingredient)
                 return parsed_ingredient
 
             except Exception as e:

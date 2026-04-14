@@ -13,7 +13,7 @@ class PandasInputAdapter:
     Optionally supports a count column.
     """
 
-    def __init__(self, name_column: str = "name", count_column: str | None = None) -> None:
+    def __init__(self, name_column: str = "ingredient", count_column: str | None = None) -> None:
         self._name_column = name_column
         self._count_column = count_column
 

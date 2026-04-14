@@ -1,0 +1,102 @@
+[
+  {
+    "stem": "gram",
+    "variants": [
+      "g",
+      "gram",
+      "grama",
+      "gramami",
+      "gramem",
+      "gramy"
+    ],
+    "pattern": "\\b(?:gramami|gramem|gramy|grama|gram|g)\\b"
+  },
+  {
+    "stem": "kilogram",
+    "variants": [
+      "kg",
+      "kilogram",
+      "kilograma",
+      "kilogramami",
+      "kilogramem",
+      "kilogramy",
+      "kilogramów"
+    ],
+    "pattern": "\\b(?:kilogramami|kilogramem|kilogramów|kilogramy|kilograma|kilogram|kg)\\b"
+  },
+  {
+    "stem": "mały",
+    "variants": [
+      "mała",
+      "małe",
+      "małego",
+      "małej",
+      "mały",
+      "małych",
+      "małym",
+      "małymi",
+      "małą"
+    ],
+    "pattern": "\\b(?:małego|małych|małymi|małym|małej|małe|mała|małą|mały)\\b"
+  },
+  {
+    "stem": "szczypta",
+    "variants": [
+      "szczypt",
+      "szczypta",
+      "szczyptami",
+      "szczypty",
+      "szczyptą",
+      "szczyptę"
+    ],
+    "pattern": "\\b(?:szczyptami|szczypta|szczyptą|szczyptę|szczypty|szczypt)\\b"
+  },
+  {
+    "stem": "szklanka",
+    "variants": [
+      "szklanek",
+      "szklanka",
+      "szklankami",
+      "szklanki",
+      "szklanką",
+      "szklankę"
+    ],
+    "pattern": "\\b(?:szklankami|szklanka|szklanki|szklankę|szklanką|szklanek)\\b"
+  },
+  {
+    "stem": "ząbek",
+    "variants": [
+      "ząbek",
+      "ząbka",
+      "ząbkami",
+      "ząbki",
+      "ząbkiem",
+      "ząbków"
+    ],
+    "pattern": "\\b(?:ząbkami|ząbkiem|ząbków|ząbek|ząbka|ząbki)\\b"
+  },
+  {
+    "stem": "łyżeczka",
+    "variants": [
+      "łyżeczek",
+      "łyżeczka",
+      "łyżeczkami",
+      "łyżeczki",
+      "łyżeczką",
+      "łyżeczkę"
+    ],
+    "pattern": "\\b(?:łyżeczkami|łyżeczki|łyżeczkę|łyżeczką|łyżeczek|łyżeczka)\\b"
+  },
+  {
+    "stem": "łyżka",
+    "variants": [
+      "łyżek",
+      "łyżka",
+      "łyżkami",
+      "łyżki",
+      "łyżką",
+      "łyżkę"
+    ],
+    "pattern": "\\b(?:łyżkami|łyżką|łyżkę|łyżki|łyżka|łyżek)\\b"
+  }
+]

@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Iterable
 
 from regex_engine.domain.enums import Category
+from regex_engine.ports.categories_repository import CategoryRepository
 from settings import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
@@ -49,16 +50,16 @@ def _load(payload:dict[str, list]) -> dict[str, Category]:
     return result
 
 
-class FileCategoryRepository:
+class FileCategoryRepository(CategoryRepository):
     def __init__(self, path: Path | None = None):
         self._path = path or (OUTPUT_DIR / "categorized_ingredients").with_suffix(".json")
 
 
-    def save(self, categorized_ingredients:dict[str, Category]):
+    def save(self, categorized_ingredients:dict[str, Category]) -> None:
         payload = defaultdict(list)
 
-        for stem, category in categorized_ingredients.items():
-            payload[category.value].append(stem)
+        for ingredient, category in categorized_ingredients.items():
+            payload[category.value].append(ingredient)
 
         try:
             with self._path.open(mode="w", encoding="utf-8") as file:
@@ -73,21 +74,26 @@ class FileCategoryRepository:
 
 
 
-    def load(self):
+    def load(self) -> dict[str, Category]:
         logger.info("Loading categories ...")
 
         if not self._path.exists():
-            logger.info(f"No regexes found at {self._path}")
+            logger.info(f"No categories found at {self._path}")
             return {}
 
         try:
             with self._path.open("r", encoding="utf-8") as file:
+                content = file.read()
+                if not content:
+                    logger.info(f"No categories found at {self._path}")
+                    return {}
+
                 payload = json.load(file)
         except json.JSONDecodeError as e:
-            logger.exception("Invalid JSON in %s: %s", self._path, e)
+            logger.exception("Invalid JSON in %s: %s. Returning empty categories", self._path, e)
             return {}
         except OSError as e:
-            logger.exception("Failed to read %s: %s", self._path, e)
+            logger.exception("Failed to read %s: %s. Returning empty categories", self._path, e)
             return {}
 
 

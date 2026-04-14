@@ -6,8 +6,9 @@ from typing import Optional, Sequence
 import re
 from regex_engine.domain.enums import RegexKind, Category
 from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
-from regex_engine.ports.regex_registry import RegexRegistryReader
+from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
+
+from regex_engine.ports.regex_registry import RegexRegistryReader, RegexRegistry
 from settings import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ def _load_categorized_payload(payload:dict[Category, list[dict]]):
 class FileCategorizedIngredientRegexRepository:
     path: Path = OUTPUT_DIR / "regexes"
 
-    def __init__(self, categorized_stems:dict[str, Category], path: Path | None = None) -> None:
+    def __init__(self, categorized_stems:dict[str, Category] = frozenset, path: Path | None = None) -> None:
         self._path = path or OUTPUT_DIR / "regexes"
         self._categorized_stems:dict[str, Category] = categorized_stems
 
@@ -103,7 +104,7 @@ class FileCategorizedIngredientRegexRepository:
             logger.exception("Failed to save regexes to %s: %s", path, e)
             raise
 
-        logger.info("Saved %s regexes to: .", len(entries), path)
+        logger.info("Saved %s regexes to: %s", len(entries), path)
 
 
     def load(self, kind:RegexKind) -> RegexRegistry:
@@ -112,17 +113,17 @@ class FileCategorizedIngredientRegexRepository:
 
         if not path.exists():
             logger.info(f"No regexes found at {path}")
-            return RegexRegistry(kind, [])
+            return RegexRegistryDefault(kind, [])
 
         try:
             with path.open("r", encoding="utf-8") as file:
                 raw = json.load(file)
         except json.JSONDecodeError as e:
             logger.exception("Invalid JSON in %s: %s", path, e)
-            return RegexRegistry(kind, [])
+            return RegexRegistryDefault(kind, [])
         except OSError as e:
             logger.exception("Failed to read %s: %s", path, e)
-            return RegexRegistry(kind, [])
+            return RegexRegistryDefault(kind, [])
 
         try:
             if kind == RegexKind.INGREDIENT_NAME:
@@ -131,11 +132,11 @@ class FileCategorizedIngredientRegexRepository:
                 entries = _load_payload(raw)
         except ValueError as e:
             logger.exception("Invalid payload structure in %s: %s", path, e)
-            return RegexRegistry(kind, [])
+            return RegexRegistryDefault(kind, [])
 
 
         logger.info(f"Loaded %s regexes.", len(entries))
-        return RegexRegistry(kind, entries)
+        return RegexRegistryDefault(kind, entries)
 
 
 

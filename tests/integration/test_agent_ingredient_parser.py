@@ -2,7 +2,7 @@ import pytest
 from unittest.mock import AsyncMock
 
 from regex_engine.domain.errors import AmbiguousParsingError, IngredientParsingError
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_ingredient_parser import AgentIngredientParser
 

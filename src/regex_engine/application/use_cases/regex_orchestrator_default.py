@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.errors import NameNotDetectedError, ConfigurationError
 from regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
@@ -43,7 +43,7 @@ FIELD_TO_KIND = (
     ("unit_size", RegexKind.UNIT_SIZE),
     ("unit", RegexKind.UNIT),
     ("condition", RegexKind.INGREDIENT_CONDITION),
-    ("ingredient_name", RegexKind.INGREDIENT_NAME),
+    ("name", RegexKind.INGREDIENT_NAME),
 )
 
 class RegexOrchestratorDefault:

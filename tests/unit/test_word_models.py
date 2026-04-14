@@ -5,7 +5,7 @@ import pytest
 
 from regex_engine.domain.models.grammar import SentencePart, GradationDegree
 
-from regex_engine.application.dto import WordAnalysis, GeneratedWord
+from regex_engine.application.dto.word_analysis import WordAnalysis, GeneratedWord
 
 
 class TestWordAnalysisBuild:

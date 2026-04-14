@@ -7,7 +7,7 @@ from regex_engine.domain.models.grammar import (
     SentencePart, GrammaticalNumber, GrammaticalCase, GrammaticalGender, GradationDegree,
 
 )
-from regex_engine.application.dto import BaseWord
+from regex_engine.application.dto.base_word import BaseWord
 
 
 

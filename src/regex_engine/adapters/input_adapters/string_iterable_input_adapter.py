@@ -6,9 +6,9 @@ from regex_engine.domain.models.ingredient_record import IngredientRecord
 
 logger = logging.getLogger(__name__ )
 
-class StringIterableInputAdapter:
-    def supports(self, data:Any) -> bool:
-        return isinstance(data, Iterable) and not isinstance(data, (str, bytes))
+class StringListInputAdapter:
+    def supports(self, data: Any) -> bool:
+        return isinstance(data, list) and all(isinstance(x, str) for x in data)
 
 
     def to_records(self, data:Any) -> list[IngredientRecord]:

@@ -5,8 +5,8 @@ from regex_engine.domain.models.orchestrator import EnsureWordResult
 
 from regex_engine.domain.models.regex_entry import RegexEntry
 
-from regex_engine.domain.models.regex_registry import RegexRegistry
-from regex_engine.ports.regex_service import RegexService
+
+from regex_engine.ports.regex_registry import RegexRegistry, RegexRegistryReader, RegexRegistryWriter
 
 from regex_engine.ports.token_normalizer import TokenNormalizer
 
@@ -17,34 +17,35 @@ logger = logging.getLogger("regex_service")
 class RegexServiceDefault:
     def __init__(self,
                  normalizer: TokenNormalizer,
-                 registry: RegexRegistry
+                 regex_registry_writer: RegexRegistryWriter,
+                 regex_registry_reader: RegexRegistryReader,
                  ):
         self._normalizer = normalizer
-        self._registry: RegexRegistry = registry
-
+        self._regex_registry_reader: RegexRegistryReader = regex_registry_reader
+        self._regex_registry_writer: RegexRegistryWriter = regex_registry_writer
 
 
     async def ensure_word_included_in_registry(self, word: str) -> EnsureWordResult:
-        kind = self._registry.kind
+        kind = self._regex_registry_reader.kind
         try:
             w = word.strip()
             if not w:
                 logger.info("Word is empty")
                 return EnsureWordResult(kind=kind, status=EnsureStatus.SKIPPED_EMPTY, stem=w, word=w)
 
-            hit = self._registry.match_best(w)
+            hit = self._regex_registry_reader.match_best(w)
             if hit:
                 logger.info("Word: %s can be matched by: %s", w, hit)
                 return EnsureWordResult(kind=kind,status=EnsureStatus.ALREADY_MATCHED, stem=w, word=w)
 
             stem = await self._normalizer.stem(w)
 
-            existing = self._registry.get(stem)
+            existing = self._regex_registry_reader.get(stem)
 
             if existing:
                 logger.info("Found word %s stem: %s", w, existing)
                 logger.info("Updating %s regex", stem)
-                self._registry.add_variant(stem=stem, variant=w)
+                self._regex_registry_writer.add_variant(stem=stem, variant=w)
                 logger.info("Done")
                 return EnsureWordResult(kind=kind, status=EnsureStatus.UPDATED_EXISTING, stem=existing.stem, word=w)
 
@@ -54,7 +55,7 @@ class RegexServiceDefault:
 
             entry = RegexEntry(stem, variants=word_variants)
             logger.info("Adding %s to database...", entry)
-            self._registry.add_entry(entry)
+            self._regex_registry_writer.add_entry(entry)
             logger.info("Done")
             return EnsureWordResult(kind=kind, status=EnsureStatus.CREATED_NEW, stem=stem, word=w)
 

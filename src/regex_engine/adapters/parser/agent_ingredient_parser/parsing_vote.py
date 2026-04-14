@@ -1,7 +1,7 @@
 from collections import Counter
 from typing import Any
 
-from regex_engine.application.dto import ParsedIngredient
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 from regex_engine.domain.errors import AmbiguousParsingError, NameNotDetectedError
 
 

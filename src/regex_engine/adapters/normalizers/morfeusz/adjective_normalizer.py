@@ -2,11 +2,9 @@ from morfeusz2 import Morfeusz
 
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Inflector
-from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 
-from regex_engine.application.dto import BaseWord
 
-from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_generated_word
+from regex_engine.application.dto.base_word import BaseWord
 
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import InflectionParadigm
 
