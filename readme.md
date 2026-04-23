@@ -607,8 +607,8 @@ After determining the `stem`, inflectional variants are generated.
 
 For names such as:
 
-- `egg yolk`  
-- `heavy cream`  
+- `żółtko jajka`  
+- `śmietanka kremówka`  
 
 The following combinations are generated:
 
