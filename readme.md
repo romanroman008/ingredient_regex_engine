@@ -665,21 +665,48 @@ Saves:
 
 ---
 
-## 🚀 Quick Start
+
+# 🚀 Quickstart
+
+### Install from GitHub
+
+```bash
+pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
+```
+
+### Or clone and install locally
+
+```bash
+git clone https://github.com/romanroman008/ingredient_regex_engine.git
+cd ingredient_regex_engine
+pip install .
+```
+
+### Optional (faster installs with uv)
+
+```bash
+pip install uv
+uv pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
+```
+
 
 ---
 
-##  🛠️ Tech Stack
+#  🛠️ Tech Stack
 
+- Python 3.11+
+- Pydantic v2 (data validation)
+- OpenAI Agents SDK (LLM / agent pipeline)
+- Morfeusz2 (Polish morphological analysis)
 ---
 
-## 🤝 Credits
+# 🤝 Credits
 
 The project utilizes:
 
 - Morfeusz2 – morphological analysis of the Polish language  
 - LLM models (OpenAI) – parsing and categorization  
 
-## 📄 License
+# 📄 License
 
 MIT License
