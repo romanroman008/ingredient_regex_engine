@@ -1,7 +1,7 @@
 import logging
 import os
-from email.parser import Parser
-from pathlib import Path
+
+
 
 from regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
 from regex_engine.adapters.categorizer.agent_categorizer_client import AgentCategorizerClient
@@ -26,7 +26,7 @@ from regex_engine.application.use_cases.learning_rules_default import LearningRu
 from regex_engine.domain.errors import InvalidModelError, ConfigurationError
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
-from regex_engine.ports.amount_extractor import AmountExtractor
+
 from regex_engine.ports.categorizer import Categorizer
 from regex_engine.ports.ingredient_parser import IngredientParser
 from regex_engine.ports.ingredient_regex_engine import IngredientRegexEngine
@@ -35,7 +35,7 @@ from regex_engine.application.use_cases.regex_orchestrator_default import RegexO
 from regex_engine.application.use_cases.regex_resolver_default import RegexResolverDefault
 from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
 from regex_engine.config import EngineConfig, AgentConfig
-from regex_engine.domain.enums import RegexKind, Category
+from regex_engine.domain.enums import RegexKind
 
 import morfeusz2
 
@@ -154,11 +154,11 @@ def _load_regex_registries(regex_repository:RegexRegistryRepository) -> Registry
 
     )
 
-def _build_entry(word):
-    return RegexEntry(stem=word, variants=[word])
+def _build_entry(word:str, variants:list[str]):
+    return RegexEntry(stem=word, variants=variants)
 
 def _build_registry(kind:RegexKind, words:dict[str, list[str]]) -> RegexRegistry:
-    return RegexRegistryDefault(kind, [_build_entry(word) for word in words])
+    return RegexRegistryDefault(kind, [_build_entry(word,variants) for word, variants in words.items()])
 
 
 def _create_and_conjunction_registry():
@@ -202,8 +202,8 @@ def _build_engine(regex_repository:RegexRegistryRepository,
                                        regex_registry_writer=registries.writer.unit_registry)
 
     unit_size_service = RegexServiceDefault(normalizer=unit_size_normalizer,
-                                            regex_registry_reader=registries.reader.unit_registry,
-                                            regex_registry_writer=registries.writer.unit_registry)
+                                            regex_registry_reader=registries.reader.unit_size_registry,
+                                            regex_registry_writer=registries.writer.unit_size_registry)
 
     ingredient_condition_service = RegexServiceDefault(normalizer=ingredient_condition_normalizer,
                                                        regex_registry_reader=registries.reader.condition_registry,
