@@ -1,27 +1,97 @@
 # Ingredient Regex Engine
 
-An NLP engine powered by LLMs for structuring ingredient data.
+An NLP engine uses a hybrid approach (LLM + regex) for extracting and normalizing ingredient data from semi-structured text.
 
 ### 🎯 Objective
 
-Transforms unstructured ingredient lists into a structured data representation.
+Transforms ingredient lists into a consistent data representation by:
+- parsing ingredients using an LLM,
+- performing inflectional normalization for the Polish language,
+- building and utilizing regex registries.
+
+This enables fast and deterministic processing without relying on language models at runtime.
 
 ### 🚀 Core Assumptions
 
-- ingredient name extraction
-- quantity and unit identification
-- input data normalization
-- support for non-standard textual formats
+- ingredient name extraction  
+- quantity and unit identification  
+- inflectional normalization of the Polish language  
 
 ### 🧩 Use Cases
 
-- shopping list processing
-- food label analysis
-- dietary and meal planning systems
-- e-commerce (product data standardization)
-
+- shopping list processing  
+- food label analysis  
+- dietary and meal planning systems  
+- e-commerce (product data standardization)  
 
 ---
+
+# ⭐ Key Features
+
+### ⚡ LLM → Regex Compilation
+Transforms LLM-parsed ingredients into reusable regex patterns for deterministic processing.
+
+### 🧠 Inflection-Aware Parsing (Polish NLP)
+Handles complex morphological variations using Morfeusz-based normalization and variant generation.
+
+### 🚀 Zero LLM Cost at Runtime
+After training, ingredient recognition runs without any LLM calls.
+
+### 🧩 Fine-Grained Ingredient Decomposition
+Extracts structured fields: amount, unit, unit size, condition, name, and extra context.
+
+### 🔁 Self-Improving Regex Registry
+Continuously expands pattern coverage by learning new variants from input data.
+
+### 🏗️ Modular Architecture (Ports & Adapters)
+Clear separation between domain logic, parsing, and persistence layers.
+
+---
+
+
+# 🚀 Quickstart
+
+### Install from GitHub
+
+```bash
+pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
+```
+
+### Or clone and install locally
+
+```bash
+git clone https://github.com/romanroman008/ingredient_regex_engine.git
+cd ingredient_regex_engine
+pip install .
+```
+
+### Optional (faster installs with uv)
+
+```bash
+pip install uv
+uv pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
+```
+
+---
+
+## 🧪 Tests
+
+Run default test suite (unit + integration):
+
+```bash
+pytest
+```
+---
+
+#  🛠️ Tech Stack
+
+- Python 3.11+
+- Pydantic v2 (data validation)
+- OpenAI Agents SDK (LLM / agent pipeline)
+- Morfeusz2 (Polish morphological analysis)
+
+---
+
 # ⚙️ Overview
 
 The engine operates in multiple modes.
@@ -62,21 +132,7 @@ The engine assigns ingredient names from its internal database to appropriate fo
 Stores regex registries and categories in a database.  
 In the current implementation, the repository is file-based due to the requirement for final human validation of both category assignments and regex parsing.
 
----
 
-# ⭐ Key Features
-
-### 🤖 Hybrid Approach (LLM + Rules)
-
-### 🧩 Structured Data Extraction from Ingredients
-
-### ⚡ Train Once, Use Without LLM
-
-### 🏗️ Extensible Architecture (Ports & Adapters)
-
-### 🔌 Support for Multiple Input Formats
-
-### 🏷️ Ingredient Categorization
 
 ---
 
@@ -92,6 +148,14 @@ Create a `.env` file in the project directory:
 ```env
 OPENAI_API_KEY=your_api_key_here
 ```
+
+
+Two demonstration notebooks are available in the `examples` directory:
+
+- `quickstart.ipynb` – requires an API key  
+- `quickstart_demo.ipynb` – no LLM: manual ingredient annotation, no categorization or persistence  
+
+
 
 ```python
 from regex_engine import EngineConfig, AgentConfig, create_engine
@@ -663,41 +727,6 @@ Saves:
 - `stem`  
 - `category`  
 
----
-
-
-# 🚀 Quickstart
-
-### Install from GitHub
-
-```bash
-pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
-```
-
-### Or clone and install locally
-
-```bash
-git clone https://github.com/romanroman008/ingredient_regex_engine.git
-cd ingredient_regex_engine
-pip install .
-```
-
-### Optional (faster installs with uv)
-
-```bash
-pip install uv
-uv pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
-```
-
-
----
-
-#  🛠️ Tech Stack
-
-- Python 3.11+
-- Pydantic v2 (data validation)
-- OpenAI Agents SDK (LLM / agent pipeline)
-- Morfeusz2 (Polish morphological analysis)
 ---
 
 # 🤝 Credits

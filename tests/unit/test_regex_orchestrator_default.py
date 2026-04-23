@@ -50,6 +50,7 @@ def _build_ensure_word_result(kind:RegexKind,
                 extra=""
             ),
             EnsureIngredientResult(
+                failed=False,
                 raw_input="2 czubate łyżki cukru trzcinowego",
                 name=_build_ensure_word_result(RegexKind.INGREDIENT_NAME, EnsureWordStatus.CREATED_NEW),
                 items={
@@ -70,6 +71,7 @@ def _build_ensure_word_result(kind:RegexKind,
                 extra=""
             ),
             EnsureIngredientResult(
+                failed=False,
                 raw_input="2 czubate łyżki zmielonego cukru trzcinowego",
                 name=_build_ensure_word_result(RegexKind.INGREDIENT_NAME, EnsureWordStatus.CREATED_NEW),
                 items={

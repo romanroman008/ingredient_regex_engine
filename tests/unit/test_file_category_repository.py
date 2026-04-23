@@ -2,13 +2,13 @@ import json
 
 import pytest
 
-from regex_engine.adapters.db.category.file_category_repository import FileCategoryRepository, is_valid_word
+from regex_engine.adapters.db.category.file_category_repository import FileCategoryRepository
 from regex_engine.domain.enums import Category
 
 
 @pytest.fixture
 def repository(tmp_path):
-    full_path = tmp_path / "categorized_ingredients.json"
+    full_path = tmp_path
     return FileCategoryRepository(full_path)
 
 

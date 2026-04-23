@@ -4,215 +4,219 @@ from unittest.mock import AsyncMock, create_autospec
 import pytest
 
 from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
-from regex_engine.domain.enums import RegexKind, EnsureWordStatus
+from regex_engine.domain.enums import EnsureWordStatus, RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.ports.regex_registry import RegexRegistryReader, RegexRegistryWriter
 from regex_engine.ports.token_normalizer import TokenNormalizer
 
-
-@pytest.fixture()
-def regex_kind() -> RegexKind:
+@pytest.fixture
+def kind() -> RegexKind:
     return next(iter(RegexKind))
 
-
-@pytest.fixture()
-def regex_entry() -> RegexEntry:
-    return create_autospec(RegexEntry, instance=True, spec_set=True)
-
-
-@pytest.fixture()
+@pytest.fixture
 def normalizer() -> TokenNormalizer:
-    normalizer = create_autospec(TokenNormalizer, instance=True, spec_set=True)
-    normalizer.stem = AsyncMock()
-    normalizer.inflect = AsyncMock()
-    return normalizer
+    mock = create_autospec(TokenNormalizer, instance=True, spec_set=True)
+    mock.stem = AsyncMock()
+    mock.inflect = AsyncMock()
+    return mock
 
 
-@pytest.fixture()
-def registry() -> RegexRegistry:
-    r = create_autospec(RegexRegistry, instance=True, spec_set=True)
+@pytest.fixture
+def reader(kind: RegexKind) -> RegexRegistryReader:
+    mock = create_autospec(RegexRegistryReader, instance=True, spec_set=True)
+    mock.kind = kind
+    mock.match_best.return_value = None
+    mock.get.return_value = None
+    return mock
 
 
-    r.match_best.return_value = None
-    r.get.return_value = None
-    r.get_all.return_value = tuple()
-
-    r.add_entry.return_value = None
-    r.remove_entry.return_value = None
-    r.add_variant.return_value = None
-    r.remove_variant.return_value = None
+@pytest.fixture
+def writer() -> RegexRegistryWriter:
+    mock = create_autospec(RegexRegistryWriter, instance=True, spec_set=True)
+    mock.add_variant.return_value = None
+    mock.add_entry.return_value = None
+    return mock
 
 
-    r.swap_match.side_effect = lambda text, replacement: text
-
-    return r
-
-
-@pytest.fixture()
-def service(regex_kind: RegexKind, normalizer: TokenNormalizer, registry: RegexRegistry) -> RegexServiceDefault:
-    svc = RegexServiceDefault(regex_kind, normalizer)
-    svc.registry = registry
-    return svc
-
-
-@pytest.mark.asyncio
-async def test_ensure_word_included_in_registry__registry_not_set__raises(regex_kind, normalizer):
-    svc = RegexServiceDefault(regex_kind, normalizer)
-
-    with pytest.raises(RuntimeError):
-        await svc.ensure_word_included_in_registry("gibberish")
+@pytest.fixture
+def service(
+    normalizer: TokenNormalizer,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+) -> RegexServiceDefault:
+    return RegexServiceDefault(
+        normalizer=normalizer,
+        regex_registry_writer=writer,
+        regex_registry_reader=reader,
+    )
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("word", ["", "  ", "\n", "\n\t "])
-async def test_ensure_word_included_in_registry__word_empty__skips(service: RegexServiceDefault, word: str):
+async def test_ensure_word_skips_empty_input(
+    service: RegexServiceDefault,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+    normalizer: TokenNormalizer,
+    kind: RegexKind,
+    word: str,
+) -> None:
     result = await service.ensure_word_included_in_registry(word)
 
-    assert result.kind == service.kind
+    assert result.kind == kind
     assert result.status == EnsureWordStatus.SKIPPED_EMPTY
     assert result.stem == ""
     assert result.word == ""
 
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("word", ["", "  ", "\n", "\n\t "])
-async def test_ensure_word_included_in_registry__word_empty__does_not_call_dependencies(
-    service: RegexServiceDefault, word: str
-):
-    await service.ensure_word_included_in_registry(word)
-
-
-    service.registry.match_best.assert_not_called()
-    service.registry.get.assert_not_called()
-    service.registry.add_variant.assert_not_called()
-    service.registry.add_entry.assert_not_called()
-
-    service._normalizer.stem.assert_not_called()
-    service._normalizer.inflect.assert_not_called()
+    reader.match_best.assert_not_called()
+    reader.get.assert_not_called()
+    writer.add_variant.assert_not_called()
+    writer.add_entry.assert_not_called()
+    normalizer.stem.assert_not_called()
+    normalizer.inflect.assert_not_called()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "word, hit_stem, expected_word",
+    ("word", "expected_word"),
     [
-        ("masło", "masło", "masło"),
-        ("  vanilia", "vanilia", "vanilia"),
-        ("sok  pomarańczowy", "HIT_STEM", "sok  pomarańczowy"),  # word nie traci spacji wewnątrz
-        ("  masło  \n ", "masło", "masło"),
+        ("masło", "masło"),
+        ("  vanilia", "vanilia"),
+        ("sok  pomarańczowy", "sok  pomarańczowy"),
+        ("  masło  \n ", "masło"),
     ],
 )
-async def test_ensure_word_in_registry__word_can_be_matched__returns_matched(
+async def test_ensure_word_returns_already_matched_when_registry_matches_input(
     service: RegexServiceDefault,
-    regex_entry: RegexEntry,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+    normalizer: TokenNormalizer,
+    kind: RegexKind,
     word: str,
-    hit_stem: str,
     expected_word: str,
-):
-    # Arrange
-    regex_entry.stem = hit_stem
-    service.registry.match_best.return_value = regex_entry
+) -> None:
+    reader.match_best.return_value = RegexEntry("dummy_stem", ("dummy",))
 
-    # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert
-    assert result.kind == service.kind
+    assert result.kind == kind
     assert result.status == EnsureWordStatus.ALREADY_MATCHED
-    assert result.stem == hit_stem
+    assert result.stem == expected_word
     assert result.word == expected_word
 
-
-    service.registry.match_best.assert_called_once_with(expected_word)
-    service._normalizer.stem.assert_not_called()
-    service._normalizer.inflect.assert_not_called()
-    service.registry.get.assert_not_called()
-    service.registry.add_variant.assert_not_called()
-    service.registry.add_entry.assert_not_called()
+    reader.match_best.assert_called_once_with(expected_word)
+    reader.get.assert_not_called()
+    normalizer.stem.assert_not_called()
+    normalizer.inflect.assert_not_called()
+    writer.add_variant.assert_not_called()
+    writer.add_entry.assert_not_called()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "word, expected_stem, expected_word",
+    ("word", "expected_word", "expected_stem"),
     [
-        ("mleka", "mleko", "mleka"),
-        ("ciasta czekoladowego", "ciasto_czekoladowe", "ciasta czekoladowego"),
-        ("\n maślanki  ", "maślanka", "maślanki"),
+        ("mleka", "mleka", "mleko"),
+        ("ciasta czekoladowego", "ciasta czekoladowego", "ciasto_czekoladowe"),
+        ("\n maślanki  ", "maślanki", "maślanka"),
     ],
 )
-async def test_ensure_word_in_registry__word_does_not_match_stem_exists__updates_existing(
+async def test_ensure_word_adds_variant_when_stem_already_exists(
     service: RegexServiceDefault,
-    regex_entry: RegexEntry,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+    normalizer: TokenNormalizer,
+    kind: RegexKind,
     word: str,
-    expected_stem: str,
     expected_word: str,
-):
-    # Arrange
-    regex_entry.stem = expected_stem
-    service.registry.match_best.return_value = None
-    service._normalizer.stem.return_value = expected_stem
-    service.registry.get.return_value = regex_entry
+    expected_stem: str,
+) -> None:
+    existing_entry = RegexEntry(expected_stem, (expected_stem,))
+    normalizer.stem.return_value = expected_stem
+    reader.get.return_value = existing_entry
 
-    # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert
-    assert result.kind == service.kind
+    assert result.kind == kind
     assert result.status == EnsureWordStatus.UPDATED_EXISTING
     assert result.stem == expected_stem
     assert result.word == expected_word
 
+    reader.match_best.assert_called_once_with(expected_word)
+    normalizer.stem.assert_awaited_once_with(expected_word)
+    reader.get.assert_called_once_with(expected_stem)
+    writer.add_variant.assert_called_once_with(stem=expected_stem, variant=expected_word)
 
-    service.registry.match_best.assert_called_once_with(expected_word)
-    service._normalizer.stem.assert_awaited_once_with(expected_word)
-    service.registry.get.assert_called_once_with(expected_stem)
-    service.registry.add_variant.assert_called_once_with(stem=expected_stem, variant=expected_word)
-
-    service._normalizer.inflect.assert_not_called()
-    service.registry.add_entry.assert_not_called()
+    normalizer.inflect.assert_not_called()
+    writer.add_entry.assert_not_called()
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "word, expected_stem, expected_word, variants",
+    ("word", "expected_word", "expected_stem", "inflected_variants"),
     [
         ("masło", "masło", "masło", ("masło",)),
-        ("mleka", "mleko", "mleka", ("mleko", "mleka")),
+        ("mleka", "mleka", "mleko", ("mleko", "mleka")),
     ],
 )
-async def test_ensure_word_in_registry__word_does_not_match_stem_not_exists__creates_new(
+async def test_ensure_word_creates_new_entry_when_stem_does_not_exist(
     service: RegexServiceDefault,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+    normalizer: TokenNormalizer,
+    kind: RegexKind,
     word: str,
-    expected_stem: str,
     expected_word: str,
-    variants: tuple[str, ...],
-):
-    # Arrange
-    service.registry.match_best.return_value = None
-    service.registry.get.return_value = None
-    service._normalizer.stem.return_value = expected_stem
-    service._normalizer.inflect.return_value = variants
+    expected_stem: str,
+    inflected_variants: tuple[str, ...],
+) -> None:
+    normalizer.stem.return_value = expected_stem
+    normalizer.inflect.return_value = inflected_variants
+    reader.get.return_value = None
 
-    # Act
     result = await service.ensure_word_included_in_registry(word)
 
-    # Assert
-    assert result.kind == service.kind
+    assert result.kind == kind
     assert result.status == EnsureWordStatus.CREATED_NEW
     assert result.stem == expected_stem
     assert result.word == expected_word
 
+    reader.match_best.assert_called_once_with(expected_word)
+    normalizer.stem.assert_awaited_once_with(expected_word)
+    reader.get.assert_called_once_with(expected_stem)
+    normalizer.inflect.assert_awaited_once_with(expected_stem)
+    writer.add_entry.assert_called_once()
 
-    service.registry.match_best.assert_called_once_with(expected_word)
-    service._normalizer.stem.assert_awaited_once_with(expected_word)
-    service.registry.get.assert_called_once_with(expected_stem)
-    service._normalizer.inflect.assert_awaited_once_with(expected_stem)
-    service.registry.add_entry.assert_called_once()
-
-
-    added_entry = service.registry.add_entry.call_args.args[0]
+    added_entry = writer.add_entry.call_args.args[0]
     assert isinstance(added_entry, RegexEntry)
     assert added_entry.stem == expected_stem
-    assert Counter(added_entry.variants) == Counter(variants)
+    assert Counter(added_entry.variants) == Counter(set(inflected_variants) | {expected_word})
+
+    writer.add_variant.assert_not_called()
 
 
-    service.registry.add_variant.assert_not_called()
+@pytest.mark.asyncio
+async def test_ensure_word_returns_failed_when_stem_raises(
+    service: RegexServiceDefault,
+    reader: RegexRegistryReader,
+    writer: RegexRegistryWriter,
+    normalizer: TokenNormalizer,
+    kind: RegexKind,
+) -> None:
+    normalizer.stem.side_effect = RuntimeError("stem failure")
+    word = "  mleka  "
+
+    result = await service.ensure_word_included_in_registry(word)
+
+    assert result.kind == kind
+    assert result.status == EnsureWordStatus.FAILED
+    assert result.stem == word
+    assert result.word == word
+    assert isinstance(result.exception, RuntimeError)
+
+    reader.match_best.assert_called_once_with("mleka")
+    normalizer.stem.assert_awaited_once_with("mleka")
+    reader.get.assert_not_called()
+    normalizer.inflect.assert_not_called()
+    writer.add_variant.assert_not_called()
+    writer.add_entry.assert_not_called()

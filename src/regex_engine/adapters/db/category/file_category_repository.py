@@ -72,23 +72,20 @@ class FileCategoryRepository(CategoryRepository):
                     len(categorized_ingredients),
                     self._path)
 
-
-
     def load(self) -> dict[str, Category]:
         logger.info("Loading categories ...")
 
         if not self._path.exists():
-            logger.info(f"No categories found at {self._path}")
+            logger.info("No categories found at %s", self._path)
             return {}
 
         try:
-            with self._path.open("r", encoding="utf-8") as file:
-                content = file.read()
-                if not content:
-                    logger.info(f"No categories found at {self._path}")
-                    return {}
+            content = self._path.read_text(encoding="utf-8")
+            if not content.strip():
+                logger.info("No categories found at %s", self._path)
+                return {}
 
-                payload = json.load(file)
+            payload = json.loads(content)
         except json.JSONDecodeError as e:
             logger.exception("Invalid JSON in %s: %s. Returning empty categories", self._path, e)
             return {}
@@ -96,7 +93,5 @@ class FileCategoryRepository(CategoryRepository):
             logger.exception("Failed to read %s: %s. Returning empty categories", self._path, e)
             return {}
 
-
         return _load(payload)
-
 

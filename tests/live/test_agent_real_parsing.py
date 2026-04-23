@@ -2,8 +2,9 @@ import asyncio
 
 import pytest
 
-from regex_engine.application.dto.parsed_ingredient import ParsedIngredient
+
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_ingredient_parser import AgentIngredientParser
+from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 
 
 @pytest.fixture(scope="module")

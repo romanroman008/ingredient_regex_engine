@@ -1,19 +1,22 @@
 import json
-from pathlib import Path
+
 
 import pytest
+
 
 from regex_engine.adapters.db.regex.file_categorized_ingredient_regex_repository import \
     FileCategorizedIngredientRegexRepository
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
+
+
+
 
 
 @pytest.fixture
 def repository(tmp_path):
-    full_path = tmp_path / "regexes"
-    return FileCategorizedIngredientRegexRepository({}, full_path)
+    return FileCategorizedIngredientRegexRepository(tmp_path, {})
 
 
 def normalize_json(items):
@@ -33,7 +36,7 @@ def normalize_entries(entries):
     "registry, expected",
     [
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.UNIT,
                 entries=[
                     RegexEntry("gram", ["g", "gram", "gramy"]),
@@ -58,7 +61,7 @@ def normalize_entries(entries):
             ]
         ),
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.AND_CONJUNCTIONS,
                 entries=[
                     RegexEntry("i", ["i"]),
@@ -71,7 +74,7 @@ def normalize_entries(entries):
             ]
         ),
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.OR_CONJUNCTIONS,
                 entries=[
                     RegexEntry("lub", ["lub"]),
@@ -86,7 +89,7 @@ def normalize_entries(entries):
             ]
         ),
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.INGREDIENT_CONDITION,
                 entries=[
                     RegexEntry("posiekany", ["posiekany", "posiekana", "posiekane"]),
@@ -101,7 +104,7 @@ def normalize_entries(entries):
             ]
         ),
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.UNIT_SIZE,
                 entries=[
                     RegexEntry("mały", ["mały", "mała", "małe"]),
@@ -134,7 +137,7 @@ def test_save__happy_path(repository, registry, expected):
     "registry, expected",
     [
         pytest.param(
-            RegexRegistry(
+            RegexRegistryDefault(
                 kind=RegexKind.INGREDIENT_NAME,
                 entries=[
                     RegexEntry("cukier", ["cukier", "cukru", "cukrem"]),
@@ -389,7 +392,6 @@ def test_load_ingredients__happy_path(repository, kind, payload, expected):
 
     actual = repository.load(kind)
 
-    assert isinstance(actual, RegexRegistry)
     assert actual.kind == kind
     assert normalize_entries(actual.get_all()) == normalize_entries(expected)
 
