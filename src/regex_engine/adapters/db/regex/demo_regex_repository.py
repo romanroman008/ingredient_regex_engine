@@ -1,7 +1,8 @@
-from build.lib.regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
+
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.errors import DemoModeError
 from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
 from regex_engine.ports.regex_registry import RegexRegistry
 
 

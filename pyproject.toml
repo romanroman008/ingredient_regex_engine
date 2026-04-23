@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "regex-engine"
 version = "0.1.0"
-description = "Ingredient regex engine"
+description = "A library enabling the standardisation of food ingredient lists"
 readme = "README.md"
 requires-python = ">=3.10"
 
@@ -15,8 +15,7 @@ dependencies = [
     "python-dotenv==1.2.2",
     "morfeusz2>=1.99",
     "pandas",
-    "psycopg[binary]",
-    "psycopg2-binary"
+    "psycopg[binary]"
 ]
 
 [tool.setuptools]

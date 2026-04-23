@@ -23,9 +23,9 @@ INPUT:
 "1 łyżeczka musztardy dijon"
 OUTPUT:
 {
-    "full_input": "1 łyżeczka musztardy dijon",
+    "full_input": "1 czubata łyżeczka musztardy dijon",
     "amount": 1,
-    "unit_adjective": "",
+    "unit_adjective": "czubata",
     "unit": "łyżeczka",
     "condition": "",
     "name": "musztardy dijon",

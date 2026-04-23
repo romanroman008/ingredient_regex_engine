@@ -1,46 +1,45 @@
 # Ingredient Regex Engine
 
-Silnik NLP wspierany przez LLM do strukturyzacji danych o składnikach.
+An NLP engine powered by LLMs for structuring ingredient data.
 
-### 🎯 Cel
+### 🎯 Objective
 
-Przekształca nieustrukturyzowane listy składników w uporządkowaną reprezentację danych.
+Transforms unstructured ingredient lists into a structured data representation.
 
-### 🚀 Główne założenia
+### 🚀 Core Assumptions
 
-- ekstrakcja nazw składników
-- identyfikacja ilości i jednostek
-- normalizacja danych wejściowych
-- wsparcie dla niestandardowych formatów tekstowych
+- ingredient name extraction
+- quantity and unit identification
+- input data normalization
+- support for non-standard textual formats
 
-### 🧩 Zastosowania
+### 🧩 Use Cases
 
-- przetwarzanie list zakupów
-- analiza etykiet produktów spożywczych
-- systemy dietetyczne i meal-planning
-- e-commerce (standaryzacja danych produktowych)
+- shopping list processing
+- food label analysis
+- dietary and meal planning systems
+- e-commerce (product data standardization)
 
 
 ---
-
 # ⚙️ Overview
 
-Silnik posiada parę trybów.
+The engine operates in multiple modes.
 
-### 🧠 Tryb uczenia się
+### 🧠 Learning Mode
 
-Silnik przyjmuje listę składników, za pomocą agenta dzieli każdy składnik na części:
+The engine accepts a list of ingredients and, using an agent, decomposes each ingredient into components:
 
-- Nazwa produktu  
-- Jednostka (garść, mililitr, etc)
-- Wielkość jednostki (duża, mały, etc)  
-- Stan produktu (stan składnika niezależny od producenta: posiekany, gotowana, etc)  
+- Product name  
+- Unit (handful, milliliter, etc.)  
+- Unit size (large, small, etc.)  
+- Product state (ingredient condition independent of the manufacturer: chopped, cooked, etc.)  
 
-Z każdej z tych części budowany jest regex, który pozwoli na ekstrakcję danych bez użycia LLM oraz bez względu na fleksję słowa.
+Each component is used to construct a regex pattern that enables data extraction without relying on an LLM and regardless of word inflection.
 
-### ⚡ Tryb strukturyzacji
+### ⚡ Structuring Mode
 
-Silnik korzystając ze swojej stworzonej bazy regexów strukturyzuje do obiektu `ResolvedIngredient`
+Using the generated regex database, the engine structures data into a `ResolvedIngredient` object
 
 ```json
 {
@@ -54,78 +53,70 @@ Silnik korzystając ze swojej stworzonej bazy regexów strukturyzuje do obiektu 
 }
 ```
 
-### 🏷️ Tryb kategoryzacji
+### 🏷️ Categorization Mode
 
-Silnik przydziela nazwy składników ze swojej bazy danych do odpowiednich kategorii spożywczych.
+The engine assigns ingredient names from its internal database to appropriate food categories.
 
-### 💾 Tryb zapisu
+### 💾 Persistence Mode
 
-Zapisuje rejestry regexów oraz kategorie do bazy danych. 
-W obecnej implementacji repozytorium bazy danych jest oparte o zapis do pliku, ze względu na konieczną ostateczną weryfikację przez człowieka zarówno kategorii jak i parsowania regexów.
-
+Stores regex registries and categories in a database.  
+In the current implementation, the repository is file-based due to the requirement for final human validation of both category assignments and regex parsing.
 
 ---
+
 # ⭐ Key Features
 
+### 🤖 Hybrid Approach (LLM + Rules)
 
-### 🤖 Hybrydowe podejście (LLM + reguły)
+### 🧩 Structured Data Extraction from Ingredients
 
-### 🧩 Ekstrakcja ustrukturyzowanych danych ze składników
+### ⚡ Train Once, Use Without LLM
 
-### ⚡ Uczenie raz, użycie bez LLM
+### 🏗️ Extensible Architecture (Ports & Adapters)
 
-### 🏗️ Rozszerzalna architektura (Ports & Adapters)
+### 🔌 Support for Multiple Input Formats
 
-### 🔌 Obsługa różnych formatów wejścia
-
-### 🏷️ Kategoryzacja składników
-
+### 🏷️ Ingredient Categorization
 
 ---
 
-# 👉 📌 Przykłady
+# 👉 📌 Examples
 
-## 🏗️ Tworzenie silnika
-### 🔐 Wymagania środowiskowe
+## 🏗️ Engine Initialization
+### 🔐 Environment Requirements
 
-Aby korzystać z funkcji opartych o LLM (np. `learn`, `categorize_registries`), wymagane jest ustawienie klucza API.
+For proper program execution, setting an API key is required.
 
-Utwórz plik `.env` w katalogu projektu:
+Create a `.env` file in the project directory:
 
 ```env
 OPENAI_API_KEY=your_api_key_here
 ```
 
 ```python
-from dataclasses import dataclass
-from pathlib import Path
+from regex_engine import EngineConfig, AgentConfig, create_engine
+from dotenv import load_dotenv
 
-@dataclass
-class AgentConfig:
-    model: str = "gpt-4o-mini"
-    timeout: int = 20
-    ensemble_size: int = 5
-    max_retries: int = 3
+load_dotenv()
 
-
-@dataclass
-class EngineConfig:
-    output_dir: Path
-    parser: AgentConfig
-    categorizer: AgentConfig
-    
-config = EngineConfig(
-    output_dir=Path("/absolute/path/to/output"),  # pełna ścieżka
-    parser=AgentConfig(),
-    categorizer=AgentConfig()
+default_config = AgentConfig(
+  model="gpt-4o-mini",
+  timeout=20,
+  ensemble_size=5,
+  max_retries=3,
 )
 
-engine = create_engine(config)
+config = EngineConfig.create(output_dir="path/to/output/directory",
+                             parser=AgentConfig(),
+                             categorizer=AgentConfig()
+                             )
+
+engine = await create_engine(config)
 ```
 
-- Jeśli `and_conjunctions` oraz `or_conjunctions` nie są dostępne w danych wejściowych lub są puste,
-  zostają automatycznie zainicjalizowane podczas bootstrapu silnika.
-## 🧠 Uczenie `learn`
+- If `and_conjunctions` and `or_conjunctions` are unavailable in the input data or are empty,
+  they are initialized automatically during engine bootstrap.
+## 🧠 Learning: `learn`
 
 ```python
 
@@ -139,7 +130,7 @@ await engine.learn([
     """
 )
 ```
-### 📦 Stan `RegexRegistry` po uczeniu
+### 📦 `RegexRegistry`
 
 #### 🧾 ingredient_name_registry
 
@@ -283,7 +274,7 @@ await engine.learn([
 ]
 ```
 
-## 🔍 Rozpoznawanie składników `recognize_ingredients`
+## 🔍`recognize_ingredients`
 ```python
 
 results = engine.recognize_ingredients([
@@ -383,7 +374,7 @@ results = engine.recognize_ingredients([
   }
 ]
 ```
-##  🗂️ Kategoryzacja
+##  🗂️ Categorisation
 ```python
 categories = await engine.categorize_registries()
 ```
@@ -400,68 +391,67 @@ categories = await engine.categorize_registries()
 
 ---
 
-# 🏗️ Architektura
+# 🏗️ Architecture
 
-System składa się z następujących komponentów:
+The system consists of the following components:
 
-- **RegexEngine** – główny punkt wejścia systemu, odpowiedzialny za orkiestrację procesów uczenia, rozpoznawania i zapisu.  
-- **IngredientLearningEngine** – komponent realizujący główną pętlę uczenia się systemu, przetwarzający składniki i inicjujący budowę rejestrów regexów.  
-- **LearningRules** – zestaw zasad odpowiedzialnych za filtrowanie i redukcję danych wejściowych podczas procesu uczenia.  
-- **Normalizers (unit, ingredient_name, unit_size, ingredient_condition)** – komponenty odpowiedzialne za normalizację morfologiczną i obsługę fleksji.  
-- **IngredientParser** – rozdziela składnik na komponenty semantyczne (np. nazwa, jednostka, stan).  
-- **RegexRegistry (unit, ingredient_name, unit_size, ingredient_condition, and_conjunctions, or_conjunctions)** – rejestry przechowujące wzorce regexów. Każdy rejestr rozdzielony jest na część odczytową (reader) i zapisową (writer).  
-- **RegexEntry** – podstawowa jednostka rejestru, zawierająca:
-  - `stem` (klucz),  
-  - `variants` (odmiany słowa, na podstawie których budowany jest regex).  
-- **RegexServices (unit, ingredient_name, unit_size, ingredient_condition)** – komponenty odpowiedzialne za utrzymywanie spójności rejestrów poprzez dodawanie nowych wpisów lub rozszerzanie istniejących o dodatkowe warianty.  
-- **RegexOrchestrator** – koordynuje pracę serwisów odpowiedzialnych za budowę i aktualizację regexów.  
-- **RegexResolver** – na podstawie danych z RegexRegistry tworzy obiekt `ResolvedIngredient` zawierający ustrukturyzowane dane (`raw_input`, `name`, `amount`, `condition`, `unit`, `unit_size`, `extra`).  
-- **InputAdapter** – standaryzuje dane wejściowe do postaci `IngredientRecord`, niezależnie od formatu wejścia.  
-- **Categorizer** – przypisuje nazwy składników do odpowiednich kategorii spożywczych.  
-- **RegexRepository** – odpowiada za zapis i odczyt rejestrów regexów.  
-- **CategoryRepository** – odpowiada za zapis i odczyt kategorii składników.
+- **RegexEngine** – the main system entry point, responsible for orchestrating learning, recognition, and persistence processes.  
+- **IngredientLearningEngine** – a component implementing the core learning loop, processing ingredients and initializing regex registry construction.  
+- **LearningRules** – a set of rules responsible for filtering and reducing input data during the learning process.  
+- **Normalizers (unit, ingredient_name, unit_size, ingredient_condition)** – components responsible for morphological normalization and inflection handling.  
+- **IngredientParser** – decomposes an ingredient into semantic components (e.g., name, unit, condition).  
+- **RegexRegistry (unit, ingredient_name, unit_size, ingredient_condition, and_conjunctions, or_conjunctions)** – registries storing regex patterns. Each registry is separated into a read (reader) and write (writer) layer.  
+- **RegexEntry** – the fundamental registry unit, containing:
+  - `stem` (key),  
+  - `variants` (word inflections used to construct the regex).  
+- **RegexServices (unit, ingredient_name, unit_size, ingredient_condition)** – components responsible for maintaining registry consistency by adding new entries or extending existing ones with additional variants.  
+- **RegexOrchestrator** – coordinates services responsible for regex construction and updates.  
+- **RegexResolver** – builds a `ResolvedIngredient` object based on data from the RegexRegistry, containing structured fields (`raw_input`, `name`, `amount`, `condition`, `unit`, `unit_size`, `extra`).  
+- **InputAdapter** – standardizes input data into the `IngredientRecord` format, regardless of the input source.  
+- **Categorizer** – assigns ingredient names to appropriate food categories.  
+- **RegexRepository** – responsible for persisting and retrieving regex registries.  
+- **CategoryRepository** – responsible for persisting and retrieving ingredient categories.
 
 ---
 
 # 🔄 Workflow
 
-System działa w kilku trybach odpowiadających kolejnym etapom przetwarzania danych.
+The system operates in multiple modes corresponding to successive data processing stages.
 
 ## 🧠 `learn(ingredients)`
 
-Funkcja odpowiedzialna za budowę bazy regexów.
+A function responsible for building the regex database.
 
-### Wejście
+### Input
 
 - `str`  
 - `list[str]`  
 - `pandas`  
 
-Dane są konwertowane do struktury `IngredientRecord`.
+Data is converted into the `IngredientRecord` structure.
 
+### 🧹 Initial Filtering
 
-### 🧹 Wstępne filtrowanie
+At the beginning, records containing conjunctions are removed,
 
-Na początku usuwane są rekordy zawierające spójniki:
+except when the conjunction occurs:
 
-z wyjątkiem przypadków, gdy spójnik znajduje się:
+- between numbers (e.g., "4 and 1/2"),  
+- within parentheses.  
 
-- pomiędzy liczbami (np. „4 i 1/2”),  
-- wewnątrz nawiasów.  
+### 🔁 Learning Loop
 
-### 🔁 Pętla uczenia
+The learning process is iterative:
 
-Proces uczenia przebiega iteracyjnie:
+- Records that can already be structured based on existing regex patterns are removed.  
+- The ingredient with the highest occurrence frequency is selected.  
+- The ingredient is parsed by the Agent.
 
-- Usuwane są rekordy, które mogą już zostać ustrukturyzowane na podstawie istniejących regexów.  
-- Wybierany jest składnik o największej liczbie wystąpień.  
-- Składnik poddawany jest parsowaniu przez Agenta.
-
-**Przykład:**
+**Example:**
 
 `2 duże łyżki ciepłego mleka`
 
-**Wynik parsowania:**
+**Parsing result:**
 
 - `2` → amount  
 - `duże` → unit_size  
@@ -469,125 +459,123 @@ Proces uczenia przebiega iteracyjnie:
 - `ciepłego` → ingredient_condition  
 - `mleka` → ingredient_name  
 
-### 🧱 Budowa wpisów regex
+### 🧱 Regex Entry Construction
 
-Dla każdego segmentu:
+For each segment:
 
-- jeśli segment może zostać już rozpoznany → jest pomijany  
-- w przeciwnym przypadku:
-  - tworzony jest stem  
-  - sprawdzane jest istnienie `RegexEntry`  
-  - jeśli istnieje → dodawany jest nowy wariant  
-  - jeśli nie istnieje → tworzony jest nowy wpis  
+- if the segment can already be recognized → it is skipped  
+- otherwise:
+  - a stem is created  
+  - existence of a `RegexEntry` is verified  
+  - if it exists → a new variant is added  
+  - if it does not exist → a new entry is created  
 
-Normalizacja i odmiana oparta jest o bibliotekę Morfeusz.
+Normalization and inflection handling are based on the Morfeusz library.
 
 ---
 
-### 🔤 Normalizacja
+### 🔤 Normalization
 
-### 🧬 Tworzenie stem
+### 🧬 Stem Construction
 
 ### `ingredient_name_normalizer`
 
-Fraza analizowana jest przez `phrase_analyser`, który wykrywa:
+The phrase is analyzed by `phrase_analyser`, which detects:
 
-- rzeczownik nadrzędny  
-- rzeczownik podrzędny  
-- przymiotniki / imiesłowy przymiotnikowe  
-- resztę frazy  
+- head noun  
+- dependent noun  
+- adjectives / adjectival participles  
+- remaining phrase  
 
-**Przykład:**
+**Example:**
 
 `mąka pszenna typu 2 z nizin himalajskich`
 
-**Analiza:**
+**Analysis:**
 
-- `mąka` → rzeczownik nadrzędny  
-- `pszenna` → przymiotnik  
-- `typu 2 z nizin himalajskich` → reszta  
+- `mąka` → head noun  
+- `pszenna` → adjective  
+- `typu 2 z nizin himalajskich` → remainder  
 
-**Zasady:**
+**Rules:**
 
-- normalizacja do mianownika liczby pojedynczej  
-- jeśli dwa rzeczowniki → oba w mianowniku  
-- dla pluralia tantum → liczba mnoga
-
+- normalization to nominative singular  
+- if two nouns are present → both in nominative  
+- for pluralia tantum → plural form
 
 
 ### `adjective_normalizer`
 
-Dla:
+For:
 
 - `unit_size`  
 - `ingredient_condition`  
 
-Stosowana forma:
+The following form is applied:
 
-- mianownik  
-- liczba pojedyncza  
-- rodzaj męski  
-
+- nominative  
+- singular  
+- masculine gender  
 
 ### `unit_normalizer`
 
-Jednostki sprowadzane są do:
+Units are normalized to:
 
-- mianownika liczby pojedynczej  
-
----
-
-
-### 🔄 Generowanie odmian
-
-Po ustaleniu `stem` generowane są warianty fleksyjne.
-
-**Standardowy zestaw:**
-
-- mianownik l.p.  
-- dopełniacz l.p.  
-- biernik l.p.  
-- narzędnik l.p.  
-- mianownik l.mn.  
-- dopełniacz l.mn.  
-- narzędnik l.mn.  
-
-##### 🧩 Nazwy złożone (2 rzeczowniki)
-
-Dla nazw takich jak:
-
-- `żółtko jajka`  
-- `śmietanka kremówka`  
-
-Generowane są kombinacje:
-
-- oba rzeczowniki → pełna odmiana  
-- pierwszy → pełna odmiana, drugi → dopełniacz  
-
-##### 🏷️ Przymiotniki
-
-Generowane jest standardowego zestaw dla każdego rodzaju:
-- męskonieżywotnego  
-- żeńskiego  
-- nijakiego
-
-##### 📏 Jednostki
-Generowany jest standardowy zestaw.
+- nominative singular  
 
 ---
 
-### ⚙️ Tworzenie regexów
+### 🔄 Inflection Generation
 
-Na podstawie:
+After determining the `stem`, inflectional variants are generated.
+
+**Standard set:**
+
+- nominative singular  
+- genitive singular  
+- accusative singular  
+- instrumental singular  
+- nominative plural  
+- genitive plural  
+- instrumental plural  
+
+##### 🧩 Compound Names (Two Nouns)
+
+For names such as:
+
+- `egg yolk`  
+- `heavy cream`  
+
+The following combinations are generated:
+
+- both nouns → full inflection set  
+- first noun → full inflection set, second → genitive  
+
+##### 🏷️ Adjectives
+
+A standard set is generated for each gender:
+
+- masculine inanimate  
+- feminine  
+- neuter  
+
+##### 📏 Units
+
+A standard inflection set is generated.
+---
+
+### ⚙️ Regex Construction
+
+Based on:
 
 - `stem`  
-- `wariantów`  
+- `variants`  
 
-tworzony jest:
+the following is created:
 
 `RegexEntry(stem, variants, regex)`
 
-Wpis zapisywany jest w odpowiednim `RegexRegistry`:
+The entry is stored in the appropriate `RegexRegistry`:
 
 - `unit`  
 - `unit_size`  
@@ -598,30 +586,29 @@ Wpis zapisywany jest w odpowiednim `RegexRegistry`:
 
 ## 🔍 `recognize_ingredients(ingredients)`
 
-Funkcja odpowiedzialna za rozpoznawanie składników bez użycia LLM.
+A function responsible for ingredient recognition without using an LLM.
 
-#### ⚡ Przebieg
+#### ⚡ Flow
 
-- Dane wejściowe konwertowane są do `IngredientRecord`  
-- System dopasowuje fragmenty do regexów z `RegexRegistry`  
+- Input data is converted to `IngredientRecord`  
+- The system matches fragments against regex patterns from `RegexRegistry`  
 
-##### 🔢 Obsługa `amount`
+##### 🔢 `amount` handling
 
-- jeśli pierwsze słowo jest liczbą → używane jako `amount`  
-- jeśli nie → `amount = 1`  
+- if the first token is a number → it is used as `amount`  
+- otherwise → `amount = 1`  
 
-Jeśli wzorzec:
+If the pattern:
 
-`liczba + spójnik + liczba`
+`number + conjunction + number`
 
-→ wartości są sumowane  
+→ values are summed  
 
+**Examples:**
 
-**Przykłady:**
+`4 and 1/2 cups of water`
 
-`4 i 1/2 szklanki wody`
-
-**Wynik:**
+**Result:**
 ```json
 {
   "raw_input": "4 i 1/2 szklanki wody",
@@ -636,8 +623,8 @@ Jeśli wzorzec:
 
 ## 🏷️ `categorize_registries()`
 
-- wykorzystuje Agenta (LLM)  
-- przypisuje składniki do kategorii:
+- uses the Agent (LLM)  
+- assigns ingredients to categories:
   - DAIRY = "nabiał"
   - MEAT = "mięso"
   - FISH_AND_SEAFOOD = "ryby i owoce morza"
@@ -665,13 +652,13 @@ Jeśli wzorzec:
 
 ## 💾 `save_registries()`
 
-- zapisuje wszystkie `RegexRegistry` do osobnych plików
-- jeśli dostępne są kategorie → zapis pogrupowany
+- saves all `RegexRegistry` instances into separate files  
+- if categories are available → data is saved in a grouped form  
 ---
 
 ## 💾 `save_categories()`
 
-Zapisuje:
+Saves:
 
 - `stem`  
 - `category`  
@@ -688,10 +675,10 @@ Zapisuje:
 
 ## 🤝 Credits
 
-Projekt wykorzystuje:
+The project utilizes:
 
-- Morfeusz2 – analiza morfologiczna języka polskiego
-- modele LLM (OpenAI) – parsowanie i kategoryzacja
+- Morfeusz2 – morphological analysis of the Polish language  
+- LLM models (OpenAI) – parsing and categorization  
 
 ## 📄 License
 
