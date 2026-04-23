@@ -12,10 +12,16 @@ logger = logging.getLogger("regex_orchestrator")
 
 
 def _build_ensure_output(ensure_results: list[EnsureWordResult], raw_input: str) -> EnsureIngredientResult:
-    by_kind = {r.kind: r for r in ensure_results}
+    failed = False
+    by_kind = {}
+    for result in ensure_results:
+        if result.exception:
+            failed = True
+        by_kind[result.kind] = result
+
     name = by_kind[RegexKind.INGREDIENT_NAME]
 
-    return EnsureIngredientResult(raw_input=raw_input, name=name, items=by_kind)
+    return EnsureIngredientResult(failed=failed, raw_input=raw_input, name=name, items=by_kind)
 
 
 def _log_ensure_items(items: list[EnsureWordResult], *, context: str) -> None:

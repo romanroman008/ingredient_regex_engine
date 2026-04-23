@@ -1,6 +1,10 @@
 import asyncio
+from pathlib import Path
 
+from regex_engine import EngineConfig, create_engine, ResolvedIngredient
 from regex_engine.bootstrap.bootstrap import create_ingredient_regex_engine
+from regex_engine.config import AgentConfig
+from regex_engine.ports.regex_registry import RegexRegistryReader
 from settings import configure_logging
 
 data = """
@@ -10,32 +14,15 @@ data = """
 mąka pszenna typu 2
 sól i pieprz
 pieprz
-20 g. masła 
+20 g masła 
+2 i 1/2 kostki masła
+5 dużych winogron
+3 paczki pomidorów malinowych
 """
 d = """
 20 g masła 
 5 kg ziemniaków
 """
-
-
-def main():
-    print("Welcome to Inflector")
-    configure_logging()
-    regex_engine = create_ingredient_regex_engine()
-    asyncio.run(regex_engine.process(d))
-    regex_engine.save_registries()
-
-def categorize():
-    configure_logging()
-    regex_engine = create_ingredient_regex_engine()
-    asyncio.run(regex_engine.categorize())
-    regex_engine.save_categories()
-
-
-def save_categorized_registries():
-    configure_logging()
-    regex_engine = create_ingredient_regex_engine()
-    regex_engine.save_registries()
 
 
 def load_pandas_ingredients():
@@ -61,7 +48,46 @@ def load_pandas_ingredients():
 
     return data
 
+config = EngineConfig(
+    output_dir= Path("C:\\Users\\roman\\Desktop\\dre"),
+    categorizer=AgentConfig(),
+    parser=AgentConfig(),
+)
+
+def print_registry(registry:RegexRegistryReader):
+    print(f"Registry: {registry.kind.name}")
+    for entry in registry.get_all():
+        print(f"stem : {entry.stem}")
+        print(f"variants: {entry.variants}")
+        print(f"regex: {entry.pattern.pattern}")
+        print("---------------------------------")
+
+def print_resolved_ingredients(ingredients:list[ResolvedIngredient]):
+    for ingredient in ingredients:
+        print(f"ingredient: {ingredient.name}")
+        print(ingredient)
+
+
+def main():
+    engine = asyncio.run(create_engine(config))
+    asyncio.run(engine.learn("""    
+    2 duże łyżki ciepłego mleka
+    1 szklanka wody
+    3 jajka
+    5 czubatych łyżek śmietany
+    1 i 1/3 słoika dżemu"""
+                             ))
+    print_resolved_ingredients(engine.recognize_ingredients(data))
+    #asyncio.run(engine.categorize_registries())
+    engine.save_registries()
+    #engine.save_categories()
+
+
+
+
+
 
 if __name__ == '__main__':
-    regex_engine = create_ingredient_regex_engine()
+    configure_logging()
+    main()
 

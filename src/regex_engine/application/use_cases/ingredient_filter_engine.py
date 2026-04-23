@@ -11,160 +11,88 @@ from regex_engine.domain.models.orchestrator import EnsureIngredientResult
 from regex_engine.domain.models.resolved_ingredient import ResolvedIngredient
 
 from regex_engine.ports.ingredient_parser import IngredientParser
+from regex_engine.ports.learing_rules import LearningRules
 from regex_engine.ports.regex_orchestrator import RegexOrchestrator
 
 from regex_engine.ports.regex_resolver import RegexResolver
 
 logger = logging.getLogger("regex_engine")
 
-def build_failed_resolved_ingredient(
-    issue: Exception,
-    raw_input: str = "",
-) -> ResolvedIngredient:
-    return ResolvedIngredient(
-        raw_input=raw_input,
-        issues=[issue],
-    )
 
-def build_resolved_ingredient(ingredient:ParsedIngredient,
-                              ensure_result:EnsureIngredientResult,
-                              ) -> ResolvedIngredient:
-    issues = []
-
-    for word_result in ensure_result.items.values():
-        if word_result.exception:
-            issues.append(word_result.exception)
-
-    if ensure_result.name.exception:
-        issues.append(ensure_result.name.exception)
-
-    return ResolvedIngredient(
-        raw_input=ingredient.raw_input,
-        amount=ingredient.amount,
-        unit_size=ensure_result.items.get(RegexKind.UNIT_SIZE),
-        unit=ensure_result.items.get(RegexKind.UNIT),
-        condition=ensure_result.items.get(RegexKind.INGREDIENT_CONDITION),
-        name=ensure_result.name,
-        extra=ingredient.extra,
-        issues=issues
-    )
-
-
-class IngredientFilterEngine:
+class IngredientLearningEngineDefault:
     def __init__(self,
                  regex_orchestrator: RegexOrchestrator,
-                 regex_resolver: RegexResolver,
                  parser: IngredientParser,
+                 learning_rules: LearningRules,
                  ):
-        self.regex_orchestrator = regex_orchestrator
-        self.regex_resolver = regex_resolver
-        self.parser = parser
+        self._regex_orchestrator = regex_orchestrator
+        self._parser = parser
+        self._learning_rules = learning_rules
 
-    @staticmethod
-    def _sort_by_count_desc(records: list[IngredientRecord]) -> list[IngredientRecord]:
-        return sorted(records, key=lambda r: r.count, reverse=True)
-
-    def filter_records_with_conj(self, records: list[IngredientRecord]) -> list[IngredientRecord]:
-        clean = []
-
-        for ingredient in records:
-            if not self.regex_resolver.contains_conjunction(ingredient.name):
-                if not self.regex_resolver.and_conjunction_between_numbers(ingredient.name):
-                    clean.append(ingredient)
-
+    def _filter_records(self, records:list[IngredientRecord]) -> list[IngredientRecord]:
+        logger.info(f"Filtering %s records", len(records))
+        clean = self._learning_rules.filter_records(records)
         records_with_conj = len(records) - len(clean)
         logger.info("Found %s records with conjunction", records_with_conj)
 
         return clean
 
-    def reduce_records(self, records: list[IngredientRecord]) -> list[IngredientRecord]:
-        remaining = []
+    def _reduce_records(self, records:list[IngredientRecord]) -> list[IngredientRecord]:
+        logger.info("Reducing records ...")
+        remaining_records = self._learning_rules.reduce_records(records)
+        logger.info(f"Reduced %s records", len(records) - len(remaining_records))
+        logger.info(f"Remaining {len(remaining_records)} records")
+        return remaining_records
 
-        for record in records:
-            try:
-                if self.regex_resolver.can_be_standardized(record.name):
-                    continue
-            except Exception as e:
-                raise ReducingRecordsError(
-                    f"Error occurred while trying to standardise {record.name}: {e}",
-                    record=record,
-                ) from e
-            remaining.append(record)
 
-        logger.info(f"Reduced %s records", len(records) - len(remaining))
-        logger.info(f"Remaining {len(remaining)} records")
+    def _select_next_record(self, records:list[IngredientRecord], processed:set[str]) -> IngredientRecord:
+        record = max((
+                r for r in records if r.name not in processed),
+                key=lambda r: r.count,
+                default=None,
+        )
+        if record is None:
+            raise EveryRecordIterated("No non-iterated records available")
 
-        return remaining
-
-    def get_first_non_iterated_record(
-            self,
-            records: list[IngredientRecord],
-    ) -> IngredientRecord:
-        not_iterated = [
-            record
-            for record in records
-            if not record.iterated
-        ]
-
-        if not not_iterated:
-            raise EveryRecordIterated(
-                "No non-iterated records available",
-            )
-
-        try:
-
-            return self._sort_by_count_desc(not_iterated)[0]
-        except Exception as e:
-            raise RecordSelectionError(
-                "Failed to select record with highest count",
-                records_count=len(not_iterated),
-            ) from e
+        processed.add(record.name)
+        return record
 
 
 
-    async def filter_records(self, ingredients: list[IngredientRecord], max_rounds: int = 10) -> list[ResolvedIngredient]:
-        logger.info("Filtering records with conjunction ...")
-        records_left = self.filter_records_with_conj(ingredients)
-        records_left = self._sort_by_count_desc(records_left)
+    async def learn(self, ingredients: list[IngredientRecord], max_rounds: int = 10):
+        records_left = self._filter_records(ingredients)
+        conj_records_number = len(ingredients) - len(records_left)
+        processed = set()
 
-        result = []
         success = 0
         failed = 0
 
-        for i in range(max_rounds):
+        iterations = min(max_rounds, len(records_left))
+
+        for i in range(iterations):
             try:
-                logger.info(f"Iteration %s of %s ...", i + 1, max_rounds)
+                logger.info(f"Iteration %s of %s ...", i + 1, iterations)
 
-                records_left = self.reduce_records(records_left)
+                records_left = self._reduce_records(records_left)
 
-                ingredient = self.get_first_non_iterated_record(records_left)
+                ingredient = self._select_next_record(records_left, processed)
 
-                ingredient.iterated = True
+                parsed_ingredient = await self._parser.parse(ingredient.name)
 
-                parsed_ingredient = await self.parser.parse(ingredient.name)
+                ensure_result = await self._regex_orchestrator.ensure_ingredient_included_in_registry(parsed_ingredient)
 
-                ensure_result = await self.regex_orchestrator.ensure_ingredient_included_in_registry(parsed_ingredient)
 
-                resolved_ingredient = build_resolved_ingredient(ingredient=parsed_ingredient, ensure_result=ensure_result)
-                result.append(resolved_ingredient)
-
-                if resolved_ingredient.issues:
-                    logger.warning("Issues occurred in iteration %s/%s", i, max_rounds)
-                    logger.warning(resolved_ingredient.issues)
+                if ensure_result.failed:
+                    logger.warning("Issues occurred in iteration %s/%s", i, iterations)
+                    logger.warning(ensure_result.iter_errors())
                     failed += 1
 
                 else:
-                    logger.info("Iteration %s/%s completed successfully", i, max_rounds)
+                    logger.info("Iteration %s/%s completed successfully", i, iterations)
                     success += 1
 
             except EveryRecordIterated:
                 break
-
-            except (RecordSelectionError, ReducingRecordsError) as e:
-                logger.exception("Error in iteration %s: %s", i + 1, e)
-                result.append(build_failed_resolved_ingredient(e))
-                failed += 1
-                continue
 
             except IngredientParsingError as e:
                 logger.error(
@@ -187,12 +115,15 @@ class IngredientFilterEngine:
 
             except Exception as e:
                 logger.exception("Error in iteration %s: %s", i + 1, e)
-                result.append(build_failed_resolved_ingredient(raw_input=ingredient.name, issue=e))
                 failed += 1
                 continue
 
-        logger.info(f"Finished filtering records {max_rounds}. Success: {success}, Failed: {failed}")
-        return result
+        logger.info(f"Finished learning records {iterations}. "
+                    f"Success: {success}, "
+                    f"Failed: {failed}. "
+                    f"Already included: {iterations - (failed + success)}. "
+                    f"Omitted records with conjunction: {conj_records_number}.")
+
 
 
 

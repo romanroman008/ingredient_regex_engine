@@ -1,6 +1,10 @@
 import logging
+import os
+from email.parser import Parser
+from pathlib import Path
 
 from regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
+from regex_engine.adapters.categorizer.agent_categorizer_client import AgentCategorizerClient
 from regex_engine.adapters.categorizer.categorizer_service_default import CategorizerServiceDefault
 from regex_engine.adapters.db.category.file_category_repository import FileCategoryRepository
 from regex_engine.adapters.db.regex.file_categorized_ingredient_regex_repository import \
@@ -13,13 +17,24 @@ from regex_engine.adapters.normalizers.morfeusz.inflector.inflector import Infle
 from regex_engine.adapters.normalizers.morfeusz.ingredient_name import MorfeuszIngredientNameNormalizer
 from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
 from regex_engine.adapters.normalizers.morfeusz.unit_normalizer import MorfeuszUnitNormalizer
+from regex_engine.adapters.parser.agent_ingredient_parser.agent_client import AgentParserClient
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_ingredient_parser import AgentIngredientParser
-from regex_engine.application.use_cases.ingredient_filter_engine import IngredientFilterEngine
-from regex_engine.application.use_cases.ingredient_regex_engine import IngredientRegexEngine
+from regex_engine.application.use_cases.amount_extractor_default import AmountExtractorDefault
+from regex_engine.application.use_cases.ingredient_filter_engine import IngredientLearningEngineDefault
+from regex_engine.application.use_cases.ingredient_regex_engine import IngredientRegexEngineDefault
+from regex_engine.application.use_cases.learning_rules_default import LearningRulesDefaults
+from regex_engine.domain.errors import InvalidModelError, ConfigurationError
+from regex_engine.domain.models.regex_entry import RegexEntry
+from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
+from regex_engine.ports.amount_extractor import AmountExtractor
+from regex_engine.ports.categorizer import Categorizer
+from regex_engine.ports.ingredient_parser import IngredientParser
+from regex_engine.ports.ingredient_regex_engine import IngredientRegexEngine
 from regex_engine.application.use_cases.input_router import InputRouter
 from regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault
 from regex_engine.application.use_cases.regex_resolver_default import RegexResolverDefault
 from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
+from regex_engine.config import EngineConfig, AgentConfig
 from regex_engine.domain.enums import RegexKind, Category
 
 import morfeusz2
@@ -28,27 +43,75 @@ from regex_engine.domain.models.registry_container import RegistryContainerReade
     RegistryContainerWriter
 
 from regex_engine.ports.categorizer_service import CategorizerService
-from regex_engine.ports.regex_registry import RegexRegistryRepository
-from settings import configure_logging
+from regex_engine.ports.regex_registry import RegexRegistryRepository, RegexRegistry
 
 logger = logging.getLogger("bootstrap")
 
 
-def create_ingredient_regex_engine() -> IngredientRegexEngine:
-    configure_logging()
+async def create_ingredient_regex_engine(config:EngineConfig) -> IngredientRegexEngine:
     logger.info("Creating IngredientRegexEngine ...")
-    category_repository = FileCategoryRepository()
+    validate_environment()
+    _validate_path(config)
+    category_repository = FileCategoryRepository(config.output_dir)
     categorized_ingredients = category_repository.load()
-    regex_repository = FileCategorizedIngredientRegexRepository(categorized_ingredients)
-    categorizer = AgentCategorizer()
+    regex_repository = FileCategorizedIngredientRegexRepository(config.output_dir, categorized_ingredients)
+
+    categorizer = await create_categorizer(config.categorizer)
+
+    parser = await create_parser(config.parser)
+
+
     categorizer_service = CategorizerServiceDefault(categorizer=categorizer,
                                                     categorized_ingredients=categorized_ingredients,
                                                     repository=category_repository)
     engine = _build_engine(regex_repository=regex_repository,
-                         categorizer_service=categorizer_service)
+                         categorizer_service=categorizer_service,
+                        parser=parser)
     logger.info("Successfully created IngredientRegexEngine")
     return engine
 
+def _validate_path(config:EngineConfig):
+    if not config.output_dir.exists():
+        logger.error("Output directory does not exist")
+        raise ConfigurationError("Invalid output directory")
+
+def validate_environment() -> None:
+    if not os.getenv("OPENAI_API_KEY"):
+        raise ConfigurationError("Missing OPENAI_API_KEY")
+
+
+async def create_categorizer(config:AgentConfig) -> Categorizer:
+    logger.info("Creating Categorizer ...")
+    try:
+
+        categorizer_agent_client = await AgentCategorizerClient.create(model=config.model,timeout=config.timeout)
+        categorizer = AgentCategorizer(
+            categorizer_agent_client=categorizer_agent_client,
+            ensemble_size=config.ensemble_size,
+            max_retries=config.max_retries,
+            )
+        logger.info("Successfully created Categorizer")
+        return categorizer
+    except InvalidModelError as e:
+        logger.error("Failed to create Categorizer | reason=%s",
+                     e)
+        raise ConfigurationError(f"Invalid categorizer model: {config.model}")
+
+async def create_parser(config:AgentConfig) -> IngredientParser:
+    logger.info("Creating Parser ...")
+    try:
+        parser_agent_client = await AgentParserClient.create(model=config.model,timeout=config.timeout)
+        parser = AgentIngredientParser(
+            ensemble_size=config.ensemble_size,
+            max_retries=config.max_retries,
+            parser_client=parser_agent_client,
+        )
+        logger.info("Successfully created Parser")
+        return parser
+    except InvalidModelError as e:
+        logger.error("Failed to create IngredientParser | reason=%s",
+                     e)
+        raise ConfigurationError(f"Invalid parser model: {config.model}")
 
 
 
@@ -59,6 +122,12 @@ def _load_regex_registries(regex_repository:RegexRegistryRepository) -> Registry
     condition_registry = regex_repository.load(RegexKind.INGREDIENT_CONDITION)
     or_conjunctions_registry = regex_repository.load(RegexKind.OR_CONJUNCTIONS)
     and_conjunctions_registry = regex_repository.load(RegexKind.AND_CONJUNCTIONS)
+
+    if not or_conjunctions_registry.get_all():
+        or_conjunctions_registry = _create_or_conjunction_registry()
+
+    if not and_conjunctions_registry.get_all():
+        and_conjunctions_registry = _create_and_conjunction_registry()
 
     reader_container = RegistryContainerReader(
         ingredient_registry=ingredient_registry,
@@ -85,9 +154,32 @@ def _load_regex_registries(regex_repository:RegexRegistryRepository) -> Registry
 
     )
 
+def _build_entry(word):
+    return RegexEntry(stem=word, variants=[word])
+
+def _build_registry(kind:RegexKind, words:dict[str, list[str]]) -> RegexRegistry:
+    return RegexRegistryDefault(kind, [_build_entry(word) for word in words])
+
+
+def _create_and_conjunction_registry():
+    and_conjunctions = {"i": ["i"],
+                        "oraz": ["oraz"]}
+    return _build_registry(RegexKind.AND_CONJUNCTIONS, and_conjunctions)
+
+def _create_or_conjunction_registry():
+    or_conjunctions = {"albo": ["albo"],
+                       "bądź": ["bądź"],
+                       "ewentualnie": ["ewentualnie"],
+                       "lub": ["lub"],
+                       "lub_też": ["lub też"]}
+    return _build_registry(RegexKind.OR_CONJUNCTIONS, or_conjunctions)
+
+
+
 
 def _build_engine(regex_repository:RegexRegistryRepository,
-                  categorizer_service:CategorizerService):
+                  categorizer_service:CategorizerService,
+                    parser:IngredientParser):
 
     registries = _load_regex_registries(regex_repository)
 
@@ -128,7 +220,10 @@ def _build_engine(regex_repository:RegexRegistryRepository,
         services_by_kind=services_by_kind,
     )
 
+    amount_extractor = AmountExtractorDefault(registries.reader.and_conjunctions_registry)
+
     resolver = RegexResolverDefault(
+        amount_extractor=amount_extractor,
         ingredient_names=registries.reader.ingredient_registry,
         ingredient_conditions=registries.reader.condition_registry,
         unit_sizes=registries.reader.unit_size_registry,
@@ -137,11 +232,12 @@ def _build_engine(regex_repository:RegexRegistryRepository,
         and_conjunctions=registries.reader.and_conjunctions_registry,
     )
 
-    parser = AgentIngredientParser()
+    learning_rules = LearningRulesDefaults(resolver, and_conjunctions=registries.reader.and_conjunctions_registry)
 
-    filter_engine = IngredientFilterEngine(
+
+    filter_engine = IngredientLearningEngineDefault(
         regex_orchestrator=regex_orchestrator,
-        regex_resolver=resolver,
+        learning_rules=learning_rules,
         parser=parser
     )
 
@@ -151,11 +247,12 @@ def _build_engine(regex_repository:RegexRegistryRepository,
 
     input_router_adapter = InputRouter(*input_adapters)
 
-    return IngredientRegexEngine(filter_engine=filter_engine,
+    return IngredientRegexEngineDefault(filter_engine=filter_engine,
                                  input_adapter=input_router_adapter,
                                  regex_repository=regex_repository,
                                  registries=registries.reader,
-                                 categorizer_service=categorizer_service)
+                                 categorizer_service=categorizer_service,
+                                 resolver=resolver)
 
 
 

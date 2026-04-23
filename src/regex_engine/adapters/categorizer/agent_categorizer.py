@@ -13,13 +13,13 @@ logger = logging.getLogger("categorizer")
 class AgentCategorizer:
     def __init__(
         self,
-        ensemble_size: int = 5,
-        max_retries: int = 3,
-        categorizer_client: AgentCategorizerClient | None = None,
+        categorizer_agent_client:AgentCategorizerClient,
+        ensemble_size: int,
+        max_retries: int,
     ):
         self.ensemble_size = ensemble_size
         self.max_retries = max_retries
-        self.categorizer_client = categorizer_client or AgentCategorizerClient()
+        self.categorizer_client = categorizer_agent_client
         
     async def _categorize_once(self, ingredient:str):
         results = await asyncio.gather(

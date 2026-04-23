@@ -1,20 +1,24 @@
 from enum import Enum, auto, StrEnum
 
+class EnsureIngredientStatus(str, Enum):
+    SUCCESS = "success"
+    PARTIAL_SUCCESS = "partial_success"
+    FAILED = "failed"
 
-class EnsureStatus(Enum):
+class EnsureWordStatus(Enum):
     ALREADY_MATCHED = auto()
     UPDATED_EXISTING = auto()
     CREATED_NEW = auto()
     SKIPPED_EMPTY = auto()
     FAILED = auto()
 
-class RegexKind(Enum):
-    UNIT_SIZE = auto()
-    UNIT = auto()
-    INGREDIENT_CONDITION = auto()
-    INGREDIENT_NAME = auto()
-    OR_CONJUNCTIONS = auto()
-    AND_CONJUNCTIONS = auto()
+class RegexKind(str, Enum):
+    UNIT_SIZE = "unit_size"
+    UNIT = "unit"
+    INGREDIENT_CONDITION = "condition"
+    INGREDIENT_NAME = "name"
+    OR_CONJUNCTIONS = "or_conjunctions"
+    AND_CONJUNCTIONS = "and_conjunctions"
 
 
 class Category(str, Enum):

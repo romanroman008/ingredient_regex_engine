@@ -5,7 +5,7 @@ from envs.django.Lib.unittest.mock import create_autospec
 
 from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
 from regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault
-from regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureWordStatus
 
 from regex_engine.domain.errors import NameNotDetectedError
 from regex_engine.domain.models.orchestrator import EnsureIngredientResult, EnsureWordResult
@@ -125,7 +125,7 @@ async def test_ensure_ingredient_included_in_registry__no_name__raises(
         await orchestrator.ensure_ingredient_included_in_registry(ingredient)
 
 def _build_ensure_word_result(kind: RegexKind) -> EnsureWordResult:
-    return EnsureWordResult(kind=kind, status=EnsureStatus.CREATED_NEW, stem="STEM", word="WORD")
+    return EnsureWordResult(kind=kind, status=EnsureWordStatus.CREATED_NEW, stem="STEM", word="WORD")
 
 @pytest.mark.asyncio
 async def test_ensure_ingredient_included_in_registry__calls_all_services(orchestrator):
@@ -176,7 +176,7 @@ async def test_ensure_ingredient_included_in_registry__only_name(orchestrator):
 
 import pytest
 
-from regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureWordStatus
 
 
 @pytest.mark.asyncio

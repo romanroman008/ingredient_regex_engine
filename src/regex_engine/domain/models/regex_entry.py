@@ -27,14 +27,13 @@ class RegexEntry:
         self._compile()
 
     def _compile(self) -> None:
-        alts = "|".join(
-            re.escape(v) for v in sorted(self.variants, key=len, reverse=True)
+        variants = sorted(
+            {v.strip() for v in self.variants if v and v.strip()},
+            key=lambda s: (-len(s), s),
         )
+        alts = "|".join(map(re.escape, variants))
+        self._pattern = re.compile(rf"\b(?:{alts})\b", re.IGNORECASE)
 
-        self._pattern = re.compile(
-            rf"\b(?:{alts})\b",
-            re.IGNORECASE | re.UNICODE,
-        )
 
     @property
     def stem(self):
@@ -63,8 +62,10 @@ class RegexEntry:
         if not variant:
             return
 
+        if variant in self._variants:
+            return
+
         self._variants.add(variant)
-        self._variants.add(self.stem)
 
         self._compile()
 

@@ -1,6 +1,6 @@
 import logging
 
-from regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureWordStatus
 from regex_engine.domain.models.orchestrator import EnsureWordResult
 
 from regex_engine.domain.models.regex_entry import RegexEntry
@@ -31,12 +31,12 @@ class RegexServiceDefault:
             w = word.strip()
             if not w:
                 logger.info("Word is empty")
-                return EnsureWordResult(kind=kind, status=EnsureStatus.SKIPPED_EMPTY, stem=w, word=w)
+                return EnsureWordResult(kind=kind, status=EnsureWordStatus.SKIPPED_EMPTY, stem=w, word=w)
 
             hit = self._regex_registry_reader.match_best(w)
             if hit:
                 logger.info("Word: %s can be matched by: %s", w, hit)
-                return EnsureWordResult(kind=kind,status=EnsureStatus.ALREADY_MATCHED, stem=w, word=w)
+                return EnsureWordResult(kind=kind, status=EnsureWordStatus.ALREADY_MATCHED, stem=w, word=w)
 
             stem = await self._normalizer.stem(w)
 
@@ -47,21 +47,22 @@ class RegexServiceDefault:
                 logger.info("Updating %s regex", stem)
                 self._regex_registry_writer.add_variant(stem=stem, variant=w)
                 logger.info("Done")
-                return EnsureWordResult(kind=kind, status=EnsureStatus.UPDATED_EXISTING, stem=existing.stem, word=w)
+                return EnsureWordResult(kind=kind, status=EnsureWordStatus.UPDATED_EXISTING, stem=existing.stem, word=w)
 
             logger.info("Creating word variants...")
             word_variants = await self._normalizer.inflect(stem)
             logger.info("Done")
 
             entry = RegexEntry(stem, variants=word_variants)
+            entry.add_variant(w)
             logger.info("Adding %s to database...", entry)
             self._regex_registry_writer.add_entry(entry)
             logger.info("Done")
-            return EnsureWordResult(kind=kind, status=EnsureStatus.CREATED_NEW, stem=stem, word=w)
+            return EnsureWordResult(kind=kind, status=EnsureWordStatus.CREATED_NEW, stem=stem, word=w)
 
         except Exception as e:
             logger.error("Error encountered: %s", e)
-            return EnsureWordResult(kind=kind, status=EnsureStatus.FAILED, stem=word, word=word, exception=e)
+            return EnsureWordResult(kind=kind, status=EnsureWordStatus.FAILED, stem=word, word=word, exception=e)
 
 
 

@@ -13,13 +13,13 @@ logger = logging.getLogger("ingredient_parser")
 class AgentIngredientParser:
     def __init__(
         self,
-        ensemble_size: int = 5,
-        max_retries: int = 3,
-        parser_client: AgentParserClient | None = None,
+        ensemble_size: int,
+        max_retries: int,
+        parser_client: AgentParserClient,
     ):
         self.ensemble_size = ensemble_size
         self.max_retries = max_retries
-        self.parser_client = parser_client or AgentParserClient()
+        self.parser_client = parser_client
 
     async def _parse_once(self, ingredient: str) -> ParsedIngredient:
         results = await asyncio.gather(

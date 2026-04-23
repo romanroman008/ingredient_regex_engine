@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock, create_autospec
 import pytest
 
 from regex_engine.application.use_cases.regex_service_default import RegexServiceDefault
-from regex_engine.domain.enums import RegexKind, EnsureStatus
+from regex_engine.domain.enums import RegexKind, EnsureWordStatus
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry import RegexRegistry
 from regex_engine.ports.token_normalizer import TokenNormalizer
@@ -69,7 +69,7 @@ async def test_ensure_word_included_in_registry__word_empty__skips(service: Rege
     result = await service.ensure_word_included_in_registry(word)
 
     assert result.kind == service.kind
-    assert result.status == EnsureStatus.SKIPPED_EMPTY
+    assert result.status == EnsureWordStatus.SKIPPED_EMPTY
     assert result.stem == ""
     assert result.word == ""
 
@@ -117,7 +117,7 @@ async def test_ensure_word_in_registry__word_can_be_matched__returns_matched(
 
     # Assert
     assert result.kind == service.kind
-    assert result.status == EnsureStatus.ALREADY_MATCHED
+    assert result.status == EnsureWordStatus.ALREADY_MATCHED
     assert result.stem == hit_stem
     assert result.word == expected_word
 
@@ -157,7 +157,7 @@ async def test_ensure_word_in_registry__word_does_not_match_stem_exists__updates
 
     # Assert
     assert result.kind == service.kind
-    assert result.status == EnsureStatus.UPDATED_EXISTING
+    assert result.status == EnsureWordStatus.UPDATED_EXISTING
     assert result.stem == expected_stem
     assert result.word == expected_word
 
@@ -197,7 +197,7 @@ async def test_ensure_word_in_registry__word_does_not_match_stem_not_exists__cre
 
     # Assert
     assert result.kind == service.kind
-    assert result.status == EnsureStatus.CREATED_NEW
+    assert result.status == EnsureWordStatus.CREATED_NEW
     assert result.stem == expected_stem
     assert result.word == expected_word
 

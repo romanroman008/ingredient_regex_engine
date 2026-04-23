@@ -7,7 +7,7 @@ from typing import Iterable
 
 from regex_engine.domain.enums import Category
 from regex_engine.ports.categories_repository import CategoryRepository
-from settings import OUTPUT_DIR
+
 
 logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ def _load(payload:dict[str, list]) -> dict[str, Category]:
 
 
 class FileCategoryRepository(CategoryRepository):
-    def __init__(self, path: Path | None = None):
-        self._path = path or (OUTPUT_DIR / "categorized_ingredients").with_suffix(".json")
+    def __init__(self, output_dir: Path):
+        self._path = (output_dir / "categorized_ingredients").with_suffix(".json")
 
 
     def save(self, categorized_ingredients:dict[str, Category]) -> None:

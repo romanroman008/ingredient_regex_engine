@@ -7,7 +7,7 @@ from regex_engine.domain.models.regex_entry import RegexEntry
 class TestRegexEntryInit:
 
     @pytest.mark.parametrize(
-        "stem, expected_stem ,variants,expected_variants",
+        "stem, expected_stem , variants, expected_variants",
         [
             ("mleko", "mleko", ["mleko", "mleka"], {"mleko", "mleka"}),
             ("masło","masło", ["masło", "masła", "masła"], {"masło", "masła"}),
@@ -69,6 +69,131 @@ class TestRegexEntryMatching:
         entry = RegexEntry("mleko", ["mleko", "mleka"])
         assert not entry.contains(text)
 
+    @pytest.mark.parametrize(
+        "text, entry, expected",
+        [
+            pytest.param(
+                "5 szklanek płatków migdałowych",
+                RegexEntry("płatki_migdałowe", ["płatki_migdałowe", "płatków migdałowych"]),
+                True,
+            ),
+            pytest.param(
+                "5 szklanek mąki typu 2",
+                RegexEntry("mąka_typu_2", ["mąka typu 2", "mąki typu 2"]),
+                True,
+            ),
+            pytest.param(
+                "dwie łyżki mąki typu 2",
+                RegexEntry("mąka_typu_2", ["mąka typu 2", "mąki typu 2"]),
+                True,
+            ),
+            pytest.param(
+                "pół kilograma mąki typu 2",
+                RegexEntry("mąka_typu_2", ["mąka typu 2", "mąki typu 2"]),
+                True,
+            ),
+            pytest.param(
+                "3 sztuki jajek kurki zielononóżki",
+                RegexEntry(
+                    "jajka_kurki_zielononóżki",
+                    ["jajka kurki zielononóżki", "jajek kurki zielononóżki"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "6 jajek kurki zielononóżki",
+                RegexEntry(
+                    "jajka_kurki_zielononóżki",
+                    ["jajka kurki zielononóżki", "jajek kurki zielononóżki"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "kilka jajek kurki zielononóżki",
+                RegexEntry(
+                    "jajka_kurki_zielononóżki",
+                    ["jajka kurki zielononóżki", "jajek kurki zielononóżki"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "2 łyżki oliwy z oliwek extra virgin",
+                RegexEntry(
+                    "oliwa_extra_virgin",
+                    ["oliwa z oliwek extra virgin", "oliwy z oliwek extra virgin"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "kilka kropel oliwy z oliwek extra virgin",
+                RegexEntry(
+                    "oliwa_extra_virgin",
+                    ["oliwa z oliwek extra virgin", "oliwy z oliwek extra virgin"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "100 ml oliwy z oliwek extra virgin",
+                RegexEntry(
+                    "oliwa_extra_virgin",
+                    ["oliwa z oliwek extra virgin", "oliwy z oliwek extra virgin"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "3 łyżki cukru trzcinowego nierafinowanego",
+                RegexEntry(
+                    "cukier_trzcinowy",
+                    ["cukier trzcinowy nierafinowany", "cukru trzcinowego nierafinowanego"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "szczypta cukru trzcinowego nierafinowanego",
+                RegexEntry(
+                    "cukier_trzcinowy",
+                    ["cukier trzcinowy nierafinowany", "cukru trzcinowego nierafinowanego"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "pół szklanki cukru trzcinowego nierafinowanego",
+                RegexEntry(
+                    "cukier_trzcinowy",
+                    ["cukier trzcinowy nierafinowany", "cukru trzcinowego nierafinowanego"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "50 g sera dojrzewającego typu parmezan",
+                RegexEntry(
+                    "ser_parmezan",
+                    ["ser dojrzewający typu parmezan", "sera dojrzewającego typu parmezan"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "dwie łyżki sera dojrzewającego typu parmezan",
+                RegexEntry(
+                    "ser_parmezan",
+                    ["ser dojrzewający typu parmezan", "sera dojrzewającego typu parmezan"],
+                ),
+                True,
+            ),
+            pytest.param(
+                "odrobina sera dojrzewającego typu parmezan",
+                RegexEntry(
+                    "ser_parmezan",
+                    ["ser dojrzewający typu parmezan", "sera dojrzewającego typu parmezan"],
+                ),
+                True,
+            ),
+        ]
+    )
+    def test_contains__multiple_words(self, text, entry, expected):
+        assert expected == entry.contains(text)
+
+
 
 class TestRegexEntryFind:
     @pytest.mark.parametrize(
@@ -129,11 +254,6 @@ class TestRegexEntryAddVariant:
 
         assert entry.variants == {"mleko"}
 
-    def test_add_variant_always_keeps_stem(self):
-        entry = RegexEntry("mleko", [])
-        entry.add_variant("mleka")
-
-        assert "mleko" in entry.variants
 
 
 class TestRegexEntryRemoveVariant:

@@ -32,7 +32,8 @@ def normalizer(morfeusz, inflector):
         ("łyżeczek", "łyżeczka"),
         ("szczypty", "szczypta"),
         ("opakowań", "opakowanie"),
-        ("garści", "garść")
+        ("garści", "garść"),
+        ("g", "gram")
 
     ]
 )

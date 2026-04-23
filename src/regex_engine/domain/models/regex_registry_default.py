@@ -54,6 +54,7 @@ class RegexRegistryDefault(RegexRegistry):
         entry = self._by_stem[stem]
         entry.remove_variant(variant)
 
+
     def match_best(self, text: str) -> Optional[RegexEntry]:
         text = text.strip()
         if not text:

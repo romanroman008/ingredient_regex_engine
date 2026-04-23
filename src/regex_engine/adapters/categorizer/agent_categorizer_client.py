@@ -1,9 +1,11 @@
 import asyncio
 
+import openai
 from agents import Agent, trace, Runner
 
 from regex_engine.application.dto.agent.categorized_ingredient import CategorizedIngredient
 from regex_engine.domain.enums import Category
+from regex_engine.domain.errors import InvalidModelError
 
 categorizer_prompt = """
 Jesteś agentem klasyfikującym produkty spożywcze.
@@ -103,19 +105,25 @@ def category_enum_to_prompt() -> str:
     return "\n".join(f'- "{c.value}"' for c in Category)
 
 
-def build_categorizer_agent() -> Agent:
+def _build_categorizer_agent(model:str) -> Agent:
     return Agent(
         name="categorizer",
         instructions=categorizer_prompt,
-        model="gpt-4o-mini",
+        model=model,
         output_type=CategorizedIngredient,
     )
 
 
 class AgentCategorizerClient:
-    def __init__(self, agent: Agent | None = None, timeout: int = 20):
-        self._agent = agent or build_categorizer_agent()
+    def __init__(self, model:str, timeout:int):
+        self._agent = _build_categorizer_agent(model)
         self._timeout = timeout
+
+    @classmethod
+    async def create(cls, model: str, timeout: int) -> "AgentCategorizerClient":
+        self = cls(model, timeout)
+        await self._ping(model)
+        return self
 
     async def categorize(self, ingredient: str, instance: int) -> CategorizedIngredient:
         with trace(f"Categorizer: {ingredient}, instance: {instance}"):
@@ -124,3 +132,15 @@ class AgentCategorizerClient:
                 timeout=self._timeout,
             )
         return result.final_output
+
+    async def _ping(self, model:str):
+        try:
+            await asyncio.wait_for(
+                Runner.run(self._agent, "ping"),
+                timeout=self._timeout,
+                )
+        except openai.BadRequestError as exc:
+            raise InvalidModelError(f"Model `{model}` is invalid or unavailable") from exc
+        except openai.AuthenticationError as exc:
+            raise InvalidModelError(f"Invalid api key") from exc
+

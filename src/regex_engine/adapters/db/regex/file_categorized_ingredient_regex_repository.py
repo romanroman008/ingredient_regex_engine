@@ -9,7 +9,6 @@ from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
 
 from regex_engine.ports.regex_registry import RegexRegistryReader, RegexRegistry
-from settings import OUTPUT_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -79,10 +78,8 @@ def _load_categorized_payload(payload:dict[Category, list[dict]]):
 
 
 class FileCategorizedIngredientRegexRepository:
-    path: Path = OUTPUT_DIR / "regexes"
-
-    def __init__(self, categorized_stems:dict[str, Category] = frozenset, path: Path | None = None) -> None:
-        self._path = path or OUTPUT_DIR / "regexes"
+    def __init__(self, output_dir: Path, categorized_stems:dict[str, Category] = frozenset) -> None:
+        self._path = output_dir / "regexes"
         self._categorized_stems:dict[str, Category] = categorized_stems
 
     def save(self, registry: RegexRegistryReader) -> None:

@@ -1,12 +1,12 @@
 import pytest
 
+from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
-from regex_engine.domain.models.regex_registry import RegexRegistry
+from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
 
 
 def _entry(stem:str, variants: list[str]) -> RegexEntry:
     return RegexEntry(stem, variants)
-
 
 
 class TestRegexRegistryInit:
@@ -17,7 +17,7 @@ class TestRegexRegistryInit:
             _entry("masło", ["masło"])
             ]
 
-        r = RegexRegistry(entries)
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME,entries)
 
         assert r.get("mleko") is not None
         assert r.get("masło") is not None
@@ -29,7 +29,7 @@ class TestRegexRegistryInit:
             _entry("mleko", ["masło"])
         ]
         with pytest.raises(ValueError):
-            RegexRegistry(entries)
+            RegexRegistryDefault(RegexKind.INGREDIENT_NAME,entries)
 
 
 class TestRegexRegistryAddEntry:
@@ -45,7 +45,7 @@ class TestRegexRegistryAddEntry:
         ]
     )
     def test_add_entry_happy_path(self, entry):
-        r = RegexRegistry([])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME,[])
         r.add_entry(entry)
         assert r.get(entry.stem) is not None
 
@@ -60,7 +60,7 @@ class TestRegexRegistryAddEntry:
         ]
     )
     def test_add_entry_duplicate(self, entry):
-        r = RegexRegistry([_entry("mleko", ["mleko"])])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME,[_entry("mleko", ["mleko"])])
 
         with pytest.raises(ValueError):
             r.add_entry(entry)
@@ -78,7 +78,7 @@ class TestRegexRegistryRemoveEntry:
     )
     def test_remove_entry_happy_path(self, initial_stems, stem_to_remove):
         entries = [_entry(stem, [stem]) for stem in initial_stems]
-        r = RegexRegistry(entries)
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME,entries)
 
         r.remove_entry(stem_to_remove)
 
@@ -96,7 +96,7 @@ class TestRegexRegistryRemoveEntry:
     )
     def test_remove_entry_missing_raises(self, initial_stems, stem_to_remove):
         entries = [_entry(stem, [stem]) for stem in initial_stems]
-        r = RegexRegistry(entries)
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME, entries)
 
         with pytest.raises(KeyError):
             r.remove_entry(stem_to_remove)
@@ -113,7 +113,7 @@ class TestRegexRegistryAddVariant:
         ],
     )
     def test_add_variant_happy_path(self, initial_stem, initial_variants, new_variant):
-        r = RegexRegistry([_entry(initial_stem, initial_variants)])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME, [_entry(initial_stem, initial_variants)])
 
         r.add_variant(stem=initial_stem, variant=new_variant)
 
@@ -132,7 +132,7 @@ class TestRegexRegistryAddVariant:
 
     )
     def test_add_variant_missing_stem_raises(self, stem):
-        r = RegexRegistry([_entry("mleko", ["mleko"])])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME, [_entry("mleko", ["mleko"])])
 
         with pytest.raises(KeyError):
             r.add_variant(stem=stem, variant="x")
@@ -148,7 +148,7 @@ class TestRegexRegistryRemoveVariant:
         ],
     )
     def test_remove_variant_happy_path(self, initial_stem, initial_variants, variant_to_remove):
-        r = RegexRegistry([_entry(initial_stem, initial_variants)])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME, [_entry(initial_stem, initial_variants)])
 
         r.remove_variant(stem=initial_stem, variant=variant_to_remove)
 
@@ -165,7 +165,7 @@ class TestRegexRegistryRemoveVariant:
         ],
     )
     def test_remove_variant_missing_stem_raises(self, stem):
-        r = RegexRegistry([_entry("mleko", ["mleko"])])
+        r = RegexRegistryDefault(RegexKind.INGREDIENT_NAME, [_entry("mleko", ["mleko"])])
 
         with pytest.raises(KeyError):
             r.remove_variant(stem=stem, variant="x")
@@ -185,7 +185,7 @@ def entries():
 
 @pytest.fixture
 def registry(entries):
-    return RegexRegistry(list(entries.values()))
+    return RegexRegistryDefault(RegexKind.INGREDIENT_NAME, list(entries.values()))
 
 class TestRegexRegistryMatchBest:
         @pytest.mark.parametrize(

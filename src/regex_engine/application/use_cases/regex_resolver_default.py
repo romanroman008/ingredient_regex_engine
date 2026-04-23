@@ -1,6 +1,10 @@
-from regex_engine.domain.const import TRASH_RE, ENUM_TOKEN_RE, AND_CONJ_RE, OR_CONJ_RE, \
-    AND_CONJ_BETWEEN_NUMBERS_RE
+import re
+from typing import Any
+
+from regex_engine.domain.models.resolved_ingredient import ResolvedIngredient
 from regex_engine.domain.enums import RegexKind
+from regex_engine.domain.errors import UnfeasibleStandardisation
+from regex_engine.ports.amount_extractor import AmountExtractor
 from regex_engine.ports.regex_registry import RegexRegistryReader
 
 
@@ -11,9 +15,11 @@ def is_number(s:str) -> bool:
     except ValueError:
         return False
 
+
 class RegexResolverDefault:
     def __init__(
             self,
+            amount_extractor:AmountExtractor,
             ingredient_names: RegexRegistryReader,
             ingredient_conditions: RegexRegistryReader,
             unit_sizes: RegexRegistryReader,
@@ -29,6 +35,45 @@ class RegexResolverDefault:
             (RegexKind.OR_CONJUNCTIONS, or_conjunctions),
             (RegexKind.AND_CONJUNCTIONS, and_conjunctions),
         ]
+        self._amount_extractor = amount_extractor
+        self._extra_regex = re.compile(r"\(([^)]*)\)")
+        self._regex_kind_token_regex = re.compile(
+            "|".join(
+                re.escape(k.name)
+                for k in sorted(RegexKind, key=lambda x: len(x.name), reverse=True)
+            )
+        )
+        self._trash_regex = re.compile(
+            r"[,\.;:()\[\]{}\"'“”‘’\-–—/\\*+=|~^]"
+        )
+
+
+    def resolve_ingredient(self, ingredient:str) -> ResolvedIngredient:
+        if not self.can_be_standardized(ingredient):
+            raise UnfeasibleStandardisation(f"Ingredient {ingredient} could not be fully standardized")
+
+        results:dict[str, Any] = {"raw_input": ingredient}
+
+        extra = self._extract_extra(ingredient)
+
+        results["extra"] = extra
+
+        results["amount"] = self._amount_extractor.extract(ingredient)
+
+        clean_ingredient = self._remove_extra(ingredient)
+
+        for kind, registry in self.pipeline:
+            match = registry.match_best(clean_ingredient)
+            if match:
+                results[registry.kind.value] = match.stem
+                registry.swap_match(clean_ingredient, "")
+        try:
+            return ResolvedIngredient.from_dict(results)
+        except (ValueError, TypeError, KeyError) as exc:
+            raise UnfeasibleStandardisation(
+                f"Failed to resolve ingredient: {ingredient!r}"
+            ) from exc
+
 
     def standardize(self, ingredient: str) -> str:
         result = ingredient
@@ -37,26 +82,22 @@ class RegexResolverDefault:
         return result
 
     def can_be_standardized(self, ingredient: str) -> bool:
-        standardized = self.standardize(ingredient)
-        remainders = ENUM_TOKEN_RE.sub("", standardized).strip()
-        clean = TRASH_RE.sub("", remainders).strip()
+        removed_extra = self._remove_extra(ingredient)
+        standardized = self.standardize(removed_extra)
+        remainders = self._regex_kind_token_regex.sub("", standardized).strip()
+        clean = self._trash_regex.sub("", remainders).strip()
 
         if not clean or is_number(clean):
             return True
         return False
 
-    def get_remainder(self, ingredient: str) -> str:
-        standardized = self.standardize(ingredient)
-        remainders = ENUM_TOKEN_RE.sub("", standardized).strip()
-        clean = TRASH_RE.sub("", remainders).strip()
-        return clean
 
-    def contains_conjunction(self, ingredient: str) -> bool:
-        if AND_CONJ_RE.search(ingredient) or OR_CONJ_RE.search(ingredient):
-            return True
-        return False
+    def _extract_extra(self, text: str) -> str:
+        match = self._extra_regex.search(text)
+        return match.group(1) if match else ""
 
-    def and_conjunction_between_numbers(self, ingredient: str) -> bool:
-        if AND_CONJ_BETWEEN_NUMBERS_RE.search(ingredient):
-            return True
-        return False
+    def _contains_extra(self, text: str) -> bool:
+        return bool(self._extract_extra(text))
+
+    def _remove_extra(self, text: str) -> str:
+        return self._extra_regex.sub("", text).strip()

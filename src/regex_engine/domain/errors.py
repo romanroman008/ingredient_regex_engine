@@ -103,3 +103,19 @@ class EveryRecordIterated(Exception):
 
 class ConfigurationError(Exception):
     pass
+
+class DemoModeError(RuntimeError):
+    pass
+
+
+class UnfeasibleStandardisation(Exception):
+    pass
+
+class AmountExtractionError(ValueError):
+    pass
+
+class InvalidModelError(Exception):
+    pass
+
+class EngineCreationError(Exception):
+    pass
