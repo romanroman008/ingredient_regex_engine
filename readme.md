@@ -184,7 +184,7 @@ engine = await create_engine(config)
 
 ```python
 
-await engine.learn([
+await engine.learn(
     """
     2 duże łyżki ciepłego mleka
     1 szklanka wody
