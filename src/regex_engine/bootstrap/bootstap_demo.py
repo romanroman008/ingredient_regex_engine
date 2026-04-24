@@ -4,6 +4,7 @@ import logging
 import morfeusz2
 
 from regex_engine.application.use_cases.amount_extractor_default import AmountExtractorDefault
+from regex_engine.application.use_cases.ingredient_learning_engine import IngredientLearningEngineDefault
 from regex_engine.application.use_cases.learning_rules_default import LearningRulesDefaults
 from regex_engine.ports.ingredient_regex_engine import IngredientRegexEngine
 from regex_engine.adapters.db.regex.demo_regex_repository import DemoRegexRepository
@@ -17,7 +18,7 @@ from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAna
 from regex_engine.adapters.normalizers.morfeusz.unit_normalizer import MorfeuszUnitNormalizer
 from regex_engine.adapters.parser.demo_parser import DemoIngredientParser
 from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
-from regex_engine.application.use_cases.ingredient_filter_engine import IngredientLearningEngineDefault
+
 from regex_engine.application.use_cases.ingredient_regex_engine_demo import IngredientRegexEngineDemo
 from regex_engine.application.use_cases.input_router import InputRouter
 from regex_engine.application.use_cases.regex_orchestrator_default import RegexOrchestratorDefault

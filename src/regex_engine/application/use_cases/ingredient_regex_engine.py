@@ -10,8 +10,9 @@ from regex_engine.domain.models.registry_container import RegistryContainerReade
 
 from regex_engine.domain.models.resolved_ingredient import ResolvedIngredient
 from regex_engine.ports.categorizer_service import CategorizerService
-from regex_engine.ports.filter_engine import IngredientLearningEngine
+
 from regex_engine.ports.input_adapter import InputAdapter
+from regex_engine.ports.learning_engine import IngredientLearningEngine
 from regex_engine.ports.regex_registry import RegexRegistryRepository
 from regex_engine.ports.regex_resolver import RegexResolver
 
@@ -35,12 +36,12 @@ class IngredientRegexEngineDefault:
         self._resolver = resolver
 
 
-    async def learn(self, data:EngineInput, iterations:int = 10):
+    async def learn(self, data:EngineInput, max_iterations:int = 100):
         ingredients = self._input_adapter.to_records(data)
 
-        iterations = min(iterations, len(ingredients))
+        max_iterations = min(max_iterations, len(ingredients))
 
-        await self._filter_engine.learn(ingredients, iterations)
+        await self._filter_engine.learn(ingredients, max_iterations)
 
 
     def recognize_ingredients(self, data:EngineInput) -> list[ResolvedIngredient]:

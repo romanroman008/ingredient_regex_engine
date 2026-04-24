@@ -132,7 +132,18 @@ The engine assigns ingredient names from its internal database to appropriate fo
 Stores regex registries and categories in a database.  
 In the current implementation, the repository is file-based due to the requirement for final human validation of both category assignments and regex parsing.
 
+### 💰 Learning Phase Cost
 
+Example (100 ingredients):
+
+- model: gpt-4o-mini
+- ensemble_size: 5
+- retries: 3
+- total cost: $0.09
+
+Cost scales linearly with input size
+> Note: Ingredient categorization uses the same LLM-based mechanism
+> so its cost profile is comparable to the learning phase.
 
 ---
 
@@ -184,14 +195,15 @@ engine = await create_engine(config)
 
 ```python
 
-await engine.learn(
+await engine.learn([
     """
     2 duże łyżki ciepłego mleka
     1 szklanka wody
     3 jajka
     5 czubatych łyżek śmietany
     1 i 1/3 słoika dżemu
-    """
+    """,
+    max_iterations=100
 )
 ```
 ### 📦 `RegexRegistry`

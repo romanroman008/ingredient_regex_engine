@@ -1,20 +1,15 @@
 import logging
 
 
-from regex_engine.application.dto.agent.parsed_ingredient import ParsedIngredient
-from regex_engine.domain.enums import RegexKind
-from regex_engine.domain.errors import ReducingRecordsError, RecordSelectionError, IngredientParsingError, \
-    EveryRecordIterated
+
+from regex_engine.domain.errors import  IngredientParsingError, EveryRecordIterated
 
 from regex_engine.domain.models.ingredient_record import IngredientRecord
-from regex_engine.domain.models.orchestrator import EnsureIngredientResult
-from regex_engine.domain.models.resolved_ingredient import ResolvedIngredient
+
 
 from regex_engine.ports.ingredient_parser import IngredientParser
 from regex_engine.ports.learing_rules import LearningRules
 from regex_engine.ports.regex_orchestrator import RegexOrchestrator
-
-from regex_engine.ports.regex_resolver import RegexResolver
 
 logger = logging.getLogger("regex_engine")
 
@@ -83,12 +78,12 @@ class IngredientLearningEngineDefault:
 
 
                 if ensure_result.failed:
-                    logger.warning("Issues occurred in iteration %s/%s", i, iterations)
+                    logger.warning("Issues occurred in iteration %s/%s", i + 1, iterations)
                     logger.warning(ensure_result.iter_errors())
                     failed += 1
 
                 else:
-                    logger.info("Iteration %s/%s completed successfully", i, iterations)
+                    logger.info("Iteration %s/%s completed successfully", i + 1, iterations)
                     success += 1
 
             except EveryRecordIterated:

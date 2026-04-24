@@ -20,7 +20,8 @@ from regex_engine.adapters.normalizers.morfeusz.unit_normalizer import MorfeuszU
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_client import AgentParserClient
 from regex_engine.adapters.parser.agent_ingredient_parser.agent_ingredient_parser import AgentIngredientParser
 from regex_engine.application.use_cases.amount_extractor_default import AmountExtractorDefault
-from regex_engine.application.use_cases.ingredient_filter_engine import IngredientLearningEngineDefault
+from regex_engine.application.use_cases.ingredient_learning_engine import IngredientLearningEngineDefault
+
 from regex_engine.application.use_cases.ingredient_regex_engine import IngredientRegexEngineDefault
 from regex_engine.application.use_cases.learning_rules_default import LearningRulesDefaults
 from regex_engine.domain.errors import InvalidModelError, ConfigurationError
@@ -73,6 +74,9 @@ async def create_ingredient_regex_engine(config:EngineConfig) -> IngredientRegex
 def _validate_path(config:EngineConfig):
     if not config.output_dir.exists():
         logger.error("Output directory does not exist")
+        raise ConfigurationError("Invalid output directory")
+    if not config.output_dir.is_dir():
+        logger.error("Output is not a directory")
         raise ConfigurationError("Invalid output directory")
 
 def validate_environment() -> None:
