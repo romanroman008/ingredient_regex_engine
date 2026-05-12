@@ -19,4 +19,7 @@ jobs:
       - name: Run tests
         run: uv run pytest
 
-      - uses: codecov/codecov-action@v5
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
