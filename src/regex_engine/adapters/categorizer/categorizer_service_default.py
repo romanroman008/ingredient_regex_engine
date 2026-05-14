@@ -2,6 +2,7 @@ import logging
 
 from regex_engine.domain.enums import Category
 from regex_engine.domain.errors import CategorizingError
+from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
 from regex_engine.ports.categories_repository import CategoryRepository
 from regex_engine.ports.categorizer import Categorizer
 from regex_engine.ports.categorizer_service import CategorizerService
@@ -14,14 +15,14 @@ class CategorizerServiceDefault(CategorizerService):
     def __init__(
         self,
         categorizer: Categorizer,
-        categorized_ingredients: dict[str, Category],
+        categorized_ingredients: dict[str,CategorizedIngredient],
         repository: CategoryRepository,
     ) -> None:
         self._categorizer = categorizer
-        self._categorized_ingredients = categorized_ingredients
+        self._categorized_ingredients:dict[str, CategorizedIngredient] = categorized_ingredients
         self._repository = repository
 
-    async def categorize(self, ingredient_registry: RegexRegistryReader) -> dict[str, Category]:
+    async def categorize(self, ingredient_registry: RegexRegistryReader) -> dict[str,CategorizedIngredient]:
         ingredients = ingredient_registry.get_all()
         total = len(ingredients)
 
@@ -57,11 +58,11 @@ class CategorizerServiceDefault(CategorizerService):
                 continue
 
             finally:
-                self._categorized_ingredients[ingredient.stem] = category
+                self._categorized_ingredients[ingredient.stem] = CategorizedIngredient.create(stem=ingredient.stem, category=category)
 
         logger.info("Categorizing %s ingredients completed.", total)
 
-        return dict(self._categorized_ingredients)
+        return self._categorized_ingredients
 
     def save(self) -> None:
         self._repository.save(self._categorized_ingredients)

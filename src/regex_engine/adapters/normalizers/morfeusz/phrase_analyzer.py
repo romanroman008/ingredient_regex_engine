@@ -11,9 +11,9 @@ from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import (
     split_phrase,
     tuples_to_word_analysis,
 )
-from regex_engine.application.dto.analysed_phrase import AnalysedPhrase
-from regex_engine.application.dto.positioned_word import PositionedWord
-from regex_engine.application.dto.word_analysis import WordAnalysis
+from regex_engine.application.dto.morfeusz.analysed_phrase import AnalysedPhrase
+from regex_engine.application.dto.morfeusz.positioned_word import PositionedWord
+from regex_engine.application.dto.morfeusz.word_analysis import WordAnalysis
 from regex_engine.domain.models.grammar import GrammaticalCase, GrammaticalNumber, SentencePart
 
 logger = logging.getLogger("phrase_analyzer")

@@ -3,7 +3,7 @@ from collections import Counter
 import pytest
 
 from regex_engine.adapters.normalizers.morfeusz.phrase_analyzer import PhraseAnalyser
-from regex_engine.application.dto.analysed_phrase import AnalysedPhrase
+from regex_engine.application.dto.morfeusz.analysed_phrase import AnalysedPhrase
 
 pytest.importorskip("morfeusz2")
 

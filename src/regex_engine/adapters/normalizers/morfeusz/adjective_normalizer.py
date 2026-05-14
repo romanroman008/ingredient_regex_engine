@@ -8,7 +8,7 @@ from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm imp
     InflectionParadigm,
 )
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import tuples_to_word_analysis
-from regex_engine.application.dto.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
 from regex_engine.domain.models.grammar import (
     GrammaticalCase,
     GrammaticalGender,

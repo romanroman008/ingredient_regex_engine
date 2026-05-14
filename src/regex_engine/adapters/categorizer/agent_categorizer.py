@@ -3,7 +3,8 @@ import logging
 
 from regex_engine.adapters.categorizer.agent_categorizer_client import AgentCategorizerClient
 from regex_engine.adapters.categorizer.categorizing_vote import choose_proper_category
-from regex_engine.application.dto.agent.categorized_ingredient import CategorizedIngredient
+from regex_engine.application.dto.agent.categorized_ingredient_agent import CategorizedIngredientAgent
+
 from regex_engine.domain.enums import Category
 from regex_engine.domain.errors import (
     AmbiguousCategoryError,
@@ -11,6 +12,7 @@ from regex_engine.domain.errors import (
     CategorizingAttemptFailedError,
     CategorizingError,
 )
+
 
 logger = logging.getLogger("categorizer")
 
@@ -35,7 +37,7 @@ class AgentCategorizer:
             return_exceptions=True,
         )
 
-        valid_results: list[CategorizedIngredient] = []
+        valid_results: list[CategorizedIngredientAgent] = []
         errors: list[Exception] = []
 
         for result in results:
@@ -51,6 +53,7 @@ class AgentCategorizer:
             raise CategorizingAttemptFailedError(ingredient, errors)
 
         return choose_proper_category(valid_results)
+
 
     async def categorize(self, ingredient: str) -> Category:
         if not ingredient or not ingredient.strip():

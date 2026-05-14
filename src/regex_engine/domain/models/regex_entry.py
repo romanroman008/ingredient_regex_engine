@@ -1,6 +1,7 @@
 import re
 from dataclasses import dataclass, field
 from typing import Iterable
+from uuid import UUID, uuid4
 
 
 def _is_empty(word: str) -> bool:
@@ -15,13 +16,20 @@ def _normalize_stem(stem: str):
 
 @dataclass(eq=False)
 class RegexEntry:
+    _id: UUID
     _stem: str
     _pattern: re.Pattern
     _variants: set[str] = field(default_factory=set)
 
-    def __init__(self, stem: str, variants: Iterable[str]):
+    def __init__(self,
+                 stem: str,
+                 variants: Iterable[str],
+                 *,
+                 entry_id: UUID = None):
         if _is_empty(stem):
             raise ValueError(f"stem {stem} cannot be empty")
+
+        self._id = entry_id or uuid4()
         self._stem = _normalize_stem(stem)
         self._variants = set(variants)
         self._compile()
@@ -33,6 +41,10 @@ class RegexEntry:
         )
         alts = "|".join(map(re.escape, variants))
         self._pattern = re.compile(rf"\b(?:{alts})\b", re.IGNORECASE)
+
+    @property
+    def id(self) -> UUID:
+        return self._id
 
     @property
     def stem(self):

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Any
 
 from regex_engine.domain.models.ingredient_record import IngredientRecord
 
@@ -118,3 +119,8 @@ class InvalidModelError(Exception):
 
 class EngineCreationError(Exception):
     pass
+
+
+class MapperError(Exception):
+    pass
+

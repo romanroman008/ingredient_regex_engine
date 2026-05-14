@@ -5,7 +5,7 @@ import pytest
 from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import (
     is_word_masculine_personal_only,
 )
-from regex_engine.application.dto.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
 from regex_engine.domain.models.grammar import (
     GradationDegree,
     GrammaticalCase,

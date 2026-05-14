@@ -15,7 +15,9 @@ dependencies = [
     "python-dotenv==1.2.2",
     "morfeusz2>=1.99",
     "pandas",
-    "psycopg[binary]",
+    "psycopg[binary]>=3.0",
+    "SQLAlchemy>=2.0",
+    "alembic>=1.18.4",
 ]
 
 [project.optional-dependencies]

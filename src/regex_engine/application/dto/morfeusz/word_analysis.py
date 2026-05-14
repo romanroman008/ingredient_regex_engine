@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from regex_engine.application.dto.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
 from regex_engine.domain.models.grammar import (
     GradationDegree,
     GrammaticalCase,
@@ -12,10 +12,13 @@ from regex_engine.domain.models.grammar import (
 
 
 @dataclass(slots=True, frozen=True)
-class GeneratedWord(BaseWord):
+class WordAnalysis(BaseWord):
+    position: int
+
     @classmethod
     def _build(
         cls,
+        position: int,
         lemma: str,
         surface: str,
         part: SentencePart,
@@ -26,8 +29,9 @@ class GeneratedWord(BaseWord):
         gender: Optional[set[GrammaticalGender]] = None,
         degree: Optional[GradationDegree] = None,
         annotations: Optional[list[str]] = None,
-    ) -> "GeneratedWord":
+    ) -> "WordAnalysis":
         return cls(
+            position=position,
             lemma=lemma,
             surface=surface,
             part=part,
@@ -41,16 +45,17 @@ class GeneratedWord(BaseWord):
         )
 
     @classmethod
-    def from_tuple(cls, analysis: tuple) -> "GeneratedWord":
-        surface, lemma, morph_tag, _, annotations = analysis
+    def from_tuple(cls, analysis: tuple) -> "WordAnalysis":
+        position, _, data = analysis
+        surface, lemma, morph_tag, _, annotations = data
 
         tags = morph_tag.split(":")
-
         part = cls._to_part(tags[0])
 
         base = {
-            "surface": surface,
+            "position": position,
             "lemma": lemma,
+            "surface": surface,
             "part": part,
             "annotations": annotations,
         }

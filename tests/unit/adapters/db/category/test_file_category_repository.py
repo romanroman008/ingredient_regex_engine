@@ -1,8 +1,7 @@
 import json
-
 import pytest
 
-from regex_engine.adapters.db.category.file_category_repository import FileCategoryRepository
+from regex_engine.adapters.db.file.category.file_category_repository import FileCategoryRepository
 from regex_engine.domain.enums import Category
 
 

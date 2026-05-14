@@ -2,7 +2,7 @@ import logging
 
 import morfeusz2
 
-from regex_engine.adapters.db.regex.demo_regex_repository import DemoRegexRepository
+from regex_engine.adapters.db.file.regex import DemoRegexRepository
 from regex_engine.adapters.input_adapters.input_router import InputRouter
 from regex_engine.adapters.input_adapters.pandas_input_adapter import PandasInputAdapter
 from regex_engine.adapters.input_adapters.string_input_adapter import StringInputAdapter

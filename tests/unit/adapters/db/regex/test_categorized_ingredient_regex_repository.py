@@ -1,10 +1,8 @@
+import pytest
 import json
 
-import pytest
-
-from regex_engine.adapters.db.regex.file_categorized_ingredient_regex_repository import (
-    FileCategorizedIngredientRegexRepository,
-)
+from regex_engine.adapters.db.file.regex.file_categorized_ingredient_regex_repository import \
+    FileCategorizedIngredientRegexRepository
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault

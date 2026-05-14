@@ -7,7 +7,7 @@ from regex_engine.adapters.normalizers.morfeusz.morfeusz_utils import (
     is_word_inflectionally_independent,
     tuples_to_generated_word,
 )
-from regex_engine.application.dto.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
 
 
 class Inflector:

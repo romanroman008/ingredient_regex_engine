@@ -3,9 +3,10 @@ import asyncio
 import openai
 from agents import Agent, Runner, trace
 
-from regex_engine.application.dto.agent.categorized_ingredient import CategorizedIngredient
+
 from regex_engine.domain.enums import Category
 from regex_engine.domain.errors import InvalidModelError
+from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
 
 categorizer_prompt = """
 Jesteś agentem klasyfikującym produkty spożywcze.
@@ -125,7 +126,7 @@ class AgentCategorizerClient:
         await self._ping(model)
         return self
 
-    async def categorize(self, ingredient: str, instance: int) -> CategorizedIngredient:
+    async def categorize(self, ingredient: str, instance: int) -> CategorizedIngredientAgent:
         with trace(f"Categorizer: {ingredient}, instance: {instance}"):
             result = await asyncio.wait_for(
                 Runner.run(self._agent, ingredient),

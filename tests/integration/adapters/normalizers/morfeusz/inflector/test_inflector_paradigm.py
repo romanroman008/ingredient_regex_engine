@@ -6,8 +6,8 @@ from regex_engine.adapters.normalizers.morfeusz.inflector.inflection_request imp
 from regex_engine.adapters.normalizers.morfeusz.inflector.inflector_paradigm import (
     InflectionParadigm,
 )
-from regex_engine.application.dto.base_word import BaseWord
-from regex_engine.application.dto.generated_word import GeneratedWord
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.generated_word import GeneratedWord
 from regex_engine.domain.models.grammar import (
     GradationDegree,
     GrammaticalCase,

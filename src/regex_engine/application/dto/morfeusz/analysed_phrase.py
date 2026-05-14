@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from regex_engine.application.dto.positioned_word import PositionedWord
+from regex_engine.application.dto.morfeusz.positioned_word import PositionedWord
 
 
 @dataclass(frozen=True)

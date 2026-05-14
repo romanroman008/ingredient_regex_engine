@@ -3,9 +3,9 @@ import re
 import string
 from typing import Sequence
 
-from regex_engine.application.dto.base_word import BaseWord
-from regex_engine.application.dto.generated_word import GeneratedWord
-from regex_engine.application.dto.word_analysis import WordAnalysis
+from regex_engine.application.dto.morfeusz.base_word import BaseWord
+from regex_engine.application.dto.morfeusz.generated_word import GeneratedWord
+from regex_engine.application.dto.morfeusz.word_analysis import WordAnalysis
 from regex_engine.domain.models.grammar import GrammaticalGender, SentencePart
 
 logger = logging.getLogger(__name__)
