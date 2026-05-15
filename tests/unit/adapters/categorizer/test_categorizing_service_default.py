@@ -40,18 +40,25 @@ def create_categorizer_mock():
     return categorizer
 
 
-def create_repository_mock():
-    return Mock(spec=CategoryRepository)
+def create_repository_mock(
+    categorized_ingredients: dict[str, CategorizedIngredient] | None = None,
+):
+    repository = Mock(spec=CategoryRepository)
+    repository.load.return_value = (
+        categorized_ingredients
+        if categorized_ingredients is not None
+        else {}
+    )
+    return repository
 
 
 def create_service(
+    *,
     categorizer=None,
-    categorized_ingredients=None,
     repository=None,
 ):
     return CategorizerServiceDefault(
         categorizer=categorizer or create_categorizer_mock(),
-        categorized_ingredients=categorized_ingredients if categorized_ingredients is not None else {},
         repository=repository or create_repository_mock(),
     )
 
@@ -62,7 +69,11 @@ async def test_categorize__new_ingredient__adds_category():
     categorizer = create_categorizer_mock()
     categorizer.categorize.return_value = Category.DAIRY
 
-    service = create_service(categorizer=categorizer)
+    repository = create_repository_mock()
+    service = create_service(
+        categorizer=categorizer,
+        repository=repository,
+    )
     registry = create_registry_mock("masło")
 
     # Act
@@ -73,6 +84,7 @@ async def test_categorize__new_ingredient__adds_category():
 
     assert categorized.stem == "masło"
     assert categorized.category == Category.DAIRY
+    repository.load.assert_called_once_with()
     categorizer.categorize.assert_awaited_once_with("masło")
 
 
@@ -86,9 +98,10 @@ async def test_categorize__already_categorized_ingredient__does_not_call_categor
         category=Category.DAIRY,
     )
 
+    repository = create_repository_mock({"masło": existing})
     service = create_service(
         categorizer=categorizer,
-        categorized_ingredients={"masło": existing},
+        repository=repository,
     )
     registry = create_registry_mock("masło")
 
@@ -96,9 +109,11 @@ async def test_categorize__already_categorized_ingredient__does_not_call_categor
     result = await service.categorize(registry)
 
     # Assert
-    assert result["masło"] is existing
-    assert result["masło"].stem == "masło"
-    assert result["masło"].category == Category.DAIRY
+    categorized = result["masło"]
+
+    assert categorized.stem == "masło"
+    assert categorized.category == Category.DAIRY
+    repository.load.assert_called_once_with()
     categorizer.categorize.assert_not_awaited()
 
 
@@ -113,9 +128,10 @@ async def test_categorize__unknown_existing_category__recategorizes_ingredient()
         category=Category.UNKNOWN,
     )
 
+    repository = create_repository_mock({"masło": existing})
     service = create_service(
         categorizer=categorizer,
-        categorized_ingredients={"masło": existing},
+        repository=repository,
     )
     registry = create_registry_mock("masło")
 
@@ -125,9 +141,9 @@ async def test_categorize__unknown_existing_category__recategorizes_ingredient()
     # Assert
     categorized = result["masło"]
 
-    assert categorized.id == existing.id
     assert categorized.stem == "masło"
     assert categorized.category == Category.DAIRY
+    repository.load.assert_called_once_with()
     categorizer.categorize.assert_awaited_once_with("masło")
 
 
@@ -137,7 +153,11 @@ async def test_categorize__categorizer_error__skips_ingredient():
     categorizer = create_categorizer_mock()
     categorizer.categorize.side_effect = CategorizingError("strwe", [])
 
-    service = create_service(categorizer=categorizer)
+    repository = create_repository_mock()
+    service = create_service(
+        categorizer=categorizer,
+        repository=repository,
+    )
     registry = create_registry_mock("strwe")
 
     # Act
@@ -145,10 +165,11 @@ async def test_categorize__categorizer_error__skips_ingredient():
 
     # Assert
     assert "strwe" not in result
+    repository.load.assert_called_once_with()
     categorizer.categorize.assert_awaited_once_with("strwe")
 
 
-def test_save__saves_categorized_ingredients():
+def test_save__saves_categorized_ingredients_loaded_from_repository():
     # Arrange
     categorized_ingredients = {
         "masło": create_categorized_ingredient(
@@ -156,15 +177,13 @@ def test_save__saves_categorized_ingredients():
             category=Category.DAIRY,
         )
     }
-    repository = create_repository_mock()
+    repository = create_repository_mock(categorized_ingredients)
 
-    service = create_service(
-        categorized_ingredients=categorized_ingredients,
-        repository=repository,
-    )
+    service = create_service(repository=repository)
 
     # Act
     service.save()
 
     # Assert
+    repository.load.assert_called_once_with()
     repository.save.assert_called_once_with(categorized_ingredients)
