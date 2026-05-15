@@ -1,14 +1,15 @@
 import logging
 
-from sqlalchemy.orm.session import sessionmaker, Session
+from sqlalchemy.orm.session import Session, sessionmaker
 from sqlalchemy.sql.expression import select
 
-from regex_engine.adapters.db.sqlalchemy.mapping.mappers import category_to_record, records_to_categorized_ingredients
-from regex_engine.adapters.db.sqlalchemy.models.category_record import CategorizedIngredientRecord
-from regex_engine.adapters.db.sqlalchemy.models.regex_entry_record import RegexEntryRecord
+from regex_engine.adapters.db.sqlalchemy.mapping.mappers import (
+    category_to_record,
+    records_to_categorized_ingredients,
+)
+from regex_engine.adapters.db.sqlalchemy.models import CategorizedIngredientRecord, RegexEntryRecord
 from regex_engine.domain.enums import RegexKind
 from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
-
 
 logger = logging.getLogger("__name__")
 
@@ -88,7 +89,7 @@ class SQLAlchemyCategoryRepository:
 
 
             for ingredient_id in existing_ids - current_ids:
-                session.delete(ingredients_by_id[ingredient_id])
+                session.delete(existing_by_id[ingredient_id])
 
             session.flush()
 

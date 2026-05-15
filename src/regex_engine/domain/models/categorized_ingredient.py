@@ -14,7 +14,7 @@ class CategorizedIngredient:
     def create(cls,
                *,
                stem: str,
-               category: Category
+               category: Category =  Category.UNKNOWN
                ) -> "CategorizedIngredient":
         return cls(
             id=uuid4(),

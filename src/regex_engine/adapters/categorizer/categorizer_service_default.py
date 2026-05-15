@@ -22,7 +22,10 @@ class CategorizerServiceDefault(CategorizerService):
         self._categorized_ingredients:dict[str, CategorizedIngredient] = categorized_ingredients
         self._repository = repository
 
-    async def categorize(self, ingredient_registry: RegexRegistryReader) -> dict[str,CategorizedIngredient]:
+
+    async def categorize(self,
+                         ingredient_registry: RegexRegistryReader
+                         ) -> dict[str,CategorizedIngredient]:
         ingredients = ingredient_registry.get_all()
         total = len(ingredients)
 
@@ -30,18 +33,22 @@ class CategorizerServiceDefault(CategorizerService):
 
         for i, ingredient in enumerate(ingredients):
             logger.info("Categorizing ingredient %s/%s", i, total)
-            existing_category = self._categorized_ingredients.get(ingredient.stem)
-            if existing_category and existing_category != Category.UNKNOWN:
+            existing_ingredient = self._categorized_ingredients.get(ingredient.stem)
+            if existing_ingredient and existing_ingredient.category != Category.UNKNOWN:
                 logger.info("Already categorized. Continuing.")
                 continue
 
-            category = Category.UNKNOWN
+            if not existing_ingredient:
+                existing_ingredient = CategorizedIngredient.create(stem=ingredient.stem)
+
             try:
                 category = await self._categorizer.categorize(ingredient.stem)
+                existing_ingredient.category = category
+                self._categorized_ingredients[ingredient.stem] = existing_ingredient
 
             except CategorizingError as e:
                 logger.error(
-                    "Ingredient categorizing failedCategory set to UNKNOWN",
+                    "Ingredient categorizing failed.",
                     extra={
                         "ingredient": e.ingredient,
                         "failures": [
@@ -57,12 +64,15 @@ class CategorizerServiceDefault(CategorizerService):
                 )
                 continue
 
-            finally:
-                self._categorized_ingredients[ingredient.stem] = CategorizedIngredient.create(stem=ingredient.stem, category=category)
-
         logger.info("Categorizing %s ingredients completed.", total)
 
         return self._categorized_ingredients
+
+
+
+
+
+
 
     def save(self) -> None:
         self._repository.save(self._categorized_ingredients)

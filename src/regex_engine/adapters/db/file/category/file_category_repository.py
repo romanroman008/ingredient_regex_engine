@@ -2,11 +2,11 @@ import json
 import logging
 import re
 from collections import defaultdict
-from pathlib import Path
-from typing import Iterable
 from collections.abc import Mapping
-from typing import Any
+from pathlib import Path
+from typing import Any, Iterable
 from uuid import UUID
+
 from regex_engine.domain.enums import Category
 from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
 from regex_engine.ports.categories_repository import CategoryRepository
@@ -84,10 +84,18 @@ def _load(payload: dict[str, list]) -> dict[str, CategorizedIngredient]:
 
                 if not is_valid_word(stem):
                     raise TypeError(f"Invalid ingredient {stem}. Skipping.")
-                result[stem] = CategorizedIngredient(id=UUID(ingredient_id), stem=stem, category=category)
+
+                result[stem] = CategorizedIngredient(
+                    id=UUID(ingredient_id),
+                    stem=stem,
+                    category=category
+                )
 
             except (TypeError, AttributeError, ValueError):
-                logger.warning("Failed to parse ingredient %s in %s", ingredient_payload, raw_category)
+                logger.warning("Failed to parse ingredient %s in %s",
+                               ingredient_payload,
+                               raw_category
+                               )
                 continue
     return result
 

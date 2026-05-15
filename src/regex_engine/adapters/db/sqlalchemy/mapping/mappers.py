@@ -1,8 +1,9 @@
-from regex_engine.adapters.db.sqlalchemy.mapping.mapping_types import RecordMappingIssue, MappingResult
-from regex_engine.adapters.db.sqlalchemy.models.category_record import CategorizedIngredientRecord
-from regex_engine.adapters.db.sqlalchemy.models.regex_entry_record import RegexEntryRecord
-from regex_engine.domain.enums import RegexKind, Category
-
+from regex_engine.adapters.db.sqlalchemy.mapping.mapping_types import (
+    MappingResult,
+    RecordMappingIssue,
+)
+from regex_engine.adapters.db.sqlalchemy.models import CategorizedIngredientRecord, RegexEntryRecord
+from regex_engine.domain.enums import Category, RegexKind
 from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
@@ -27,6 +28,7 @@ def regex_entry_to_record(entry:RegexEntry, kind: RegexKind) -> RegexEntryRecord
         regex_kind=kind.value,
         stem=entry.stem,
         variants=entry.variants,
+        pattern=entry.pattern.pattern,
     )
 
 def records_to_regex_registry(records: list[RegexEntryRecord], kind:RegexKind) -> RegexRegistry:
@@ -46,12 +48,6 @@ def record_to_regex_entry(record:RegexEntryRecord) -> RegexEntry:
         entry_id=record.id
     )
 
-
-def categories_to_records(categorised_ingredient:list[CategorizedIngredient]) -> list[RegexEntryRecord]:
-    return [
-        category_to_record(ingredient)
-        for ingredient in categorised_ingredient
-        ]
 
 def category_to_record(categorized_ingredient:CategorizedIngredient) -> CategorizedIngredientRecord:
     return CategorizedIngredientRecord(
@@ -76,13 +72,15 @@ def records_to_categorized_ingredients(records:list[CategorizedIngredientRecord]
             items.append(ingredient)
 
         except ValueError as e:
-            issues.append(RecordMappingIssue(
-                record_id=record.id,
-                field=CategorizedIngredientRecord.regex_kind.key,
-                raw_value=record.regex_kind,
-                target_type=CategorizedIngredient,
-                reason=str(e)
-            ))
+            issues.append(
+                RecordMappingIssue(
+                    record_id=record.id,
+                    field=CategorizedIngredientRecord.category.key,
+                    raw_value=record.category,
+                    target_type=CategorizedIngredient,
+                    reason=str(e),
+                )
+            )
             continue
 
 

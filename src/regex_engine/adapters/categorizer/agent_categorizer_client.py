@@ -3,7 +3,9 @@ import asyncio
 import openai
 from agents import Agent, Runner, trace
 
-
+from regex_engine.application.dto.agent.categorized_ingredient_agent import (
+    CategorizedIngredientAgent,
+)
 from regex_engine.domain.enums import Category
 from regex_engine.domain.errors import InvalidModelError
 from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient

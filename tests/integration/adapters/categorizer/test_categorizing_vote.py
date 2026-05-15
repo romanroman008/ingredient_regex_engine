@@ -1,12 +1,13 @@
 import pytest
 
 from regex_engine.adapters.categorizer.categorizing_vote import choose_proper_category
-from regex_engine.application.dto.agent.categorized_ingredient import CategorizedIngredient
+from regex_engine.application.dto.agent.categorized_ingredient_agent import CategorizedIngredientAgent
+
 from regex_engine.domain.enums import Category
 
 
-def categorized_ingredient(category: Category) -> CategorizedIngredient:
-    return CategorizedIngredient(
+def categorized_ingredient(category: Category) -> CategorizedIngredientAgent:
+    return CategorizedIngredientAgent(
         category=category,
         name="test ingredient",
         description="test description",

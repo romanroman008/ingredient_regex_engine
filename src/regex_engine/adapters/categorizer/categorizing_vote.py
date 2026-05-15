@@ -1,8 +1,9 @@
 from regex_engine.adapters.parser.agent_ingredient_parser.parsing_vote import (
     get_most_occurred_value,
 )
-from regex_engine.application.dto.agent.categorized_ingredient_agent import CategorizedIngredientAgent
-
+from regex_engine.application.dto.agent.categorized_ingredient_agent import (
+    CategorizedIngredientAgent,
+)
 from regex_engine.domain.enums import Category
 
 

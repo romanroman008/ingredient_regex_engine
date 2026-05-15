@@ -7,9 +7,9 @@ from regex_engine.adapters.categorizer.agent_categorizer import AgentCategorizer
 from regex_engine.adapters.categorizer.agent_categorizer_client import AgentCategorizerClient
 from regex_engine.adapters.categorizer.categorizer_service_default import CategorizerServiceDefault
 from regex_engine.adapters.db.file.category.file_category_repository import FileCategoryRepository
-from regex_engine.adapters.db.file.regex.file_categorized_ingredient_regex_repository import \
-    FileCategorizedIngredientRegexRepository
-
+from regex_engine.adapters.db.file.regex.file_categorized_ingredient_regex_repository import (
+    FileCategorizedIngredientRegexRepository,
+)
 from regex_engine.adapters.input_adapters.input_router import InputRouter
 from regex_engine.adapters.input_adapters.pandas_input_adapter import PandasInputAdapter
 from regex_engine.adapters.input_adapters.string_input_adapter import StringInputAdapter

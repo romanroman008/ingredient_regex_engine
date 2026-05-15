@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional, Union, Literal
+from typing import Literal, Optional, Union
 
 PathLike = Union[str, Path]
 

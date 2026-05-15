@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Sequence
 
 from regex_engine.domain.enums import Category, RegexKind
+from regex_engine.domain.models.categorized_ingredient import CategorizedIngredient
 from regex_engine.domain.models.regex_entry import RegexEntry
 from regex_engine.domain.models.regex_registry_default import RegexRegistryDefault
 from regex_engine.ports.regex_registry import RegexRegistry, RegexRegistryReader
@@ -72,10 +73,12 @@ def _load_categorized_payload(payload: dict[Category, list[dict]]):
 
 class FileCategorizedIngredientRegexRepository:
     def __init__(
-        self, output_dir: Path, categorized_stems: dict[str, Category] = frozenset
+        self,
+            output_dir: Path,
+            categorized_ingredients: dict[str, CategorizedIngredient] = frozenset
     ) -> None:
         self._path = output_dir / "regexes"
-        self._categorized_stems: dict[str, Category] = categorized_stems
+        self._categorized_ingredients: dict[str, CategorizedIngredient] = categorized_ingredients
 
     def save(self, registry: RegexRegistryReader) -> None:
         kind = registry.kind
@@ -134,9 +137,11 @@ class FileCategorizedIngredientRegexRepository:
         payload = defaultdict(list)
 
         for entry in entries:
-            category = self._categorized_stems.get(entry.stem)
-            if not category:
+            categorized_ingredient = self._categorized_ingredients.get(entry.stem)
+            if not categorized_ingredient:
                 category = Category.UNKNOWN
+            else:
+                category = categorized_ingredient.category
 
             payload[category.value].append(
                 {
@@ -154,6 +159,3 @@ class FileCategorizedIngredientRegexRepository:
         path.parent.mkdir(parents=True, exist_ok=True)
         return path
 
-    def update_categories(self, categorized_stems: dict[str, Category]) -> None:
-        for stem, category in categorized_stems.items():
-            self._categorized_stems[stem] = category

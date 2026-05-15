@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 from regex_engine.domain.models.ingredient_record import IngredientRecord
 

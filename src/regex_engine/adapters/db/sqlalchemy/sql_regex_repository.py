@@ -1,10 +1,12 @@
 from sqlalchemy.orm.session import Session, sessionmaker
 from sqlalchemy.sql.expression import select
 
-from regex_engine.adapters.db.sqlalchemy.mapping.mappers import regex_entry_to_record, \
-    update_record_from_entry, records_to_regex_registry
-from regex_engine.adapters.db.sqlalchemy.models.regex_entry_record import RegexEntryRecord
-
+from regex_engine.adapters.db.sqlalchemy.mapping.mappers import (
+    records_to_regex_registry,
+    regex_entry_to_record,
+    update_record_from_entry,
+)
+from regex_engine.adapters.db.sqlalchemy.models import RegexEntryRecord
 from regex_engine.domain.enums import RegexKind
 from regex_engine.ports.regex_registry import RegexRegistry
 
