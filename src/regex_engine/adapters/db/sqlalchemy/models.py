@@ -18,6 +18,7 @@ class RegexEntryRecord(Base):
     __tablename__ = 'regex_entries'
     id: Mapped[UUID] = mapped_column(primary_key=True)
     regex_kind: Mapped[str] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=True)
     stem: Mapped[str] = mapped_column(unique=True,  nullable=False)
     variants: Mapped[list[str]] = mapped_column(
         MutableList.as_mutable(JSON),
@@ -52,7 +53,7 @@ class RegexEntryRecord(Base):
 
 
     def __repr__(self) -> str:
-        return f"<RegexEntry id={self.id} name={self.name} variants={self.variants}>"
+        return f"<RegexEntry id={self.id} name={self.stem} variants={self.variants}>"
 
 
 

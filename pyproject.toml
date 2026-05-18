@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 dependencies = [
     "pydantic==2.12.2",
     "openai-agents>=0.2.0",
-    "python-dotenv==1.2.2",
+    "python-dotenv>=1.0",
     "morfeusz2>=1.99",
     "pandas",
     "psycopg[binary]>=3.0",

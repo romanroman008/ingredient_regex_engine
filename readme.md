@@ -52,13 +52,12 @@ Clear separation between domain logic, parsing, and persistence layers.
 
 ---
 
-
 # 🚀 Quickstart
 
-### Install from GitHub
+## Install from GitHub
 
 ```bash
-pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
+python -m pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
 ```
 
 ### Or clone and install locally
@@ -66,26 +65,56 @@ pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
 ```bash
 git clone https://github.com/romanroman008/ingredient_regex_engine.git
 cd ingredient_regex_engine
-pip install .
+python -m pip install .
 ```
 
-### Optional (faster installs with uv)
+For editable local development, including test and lint dependencies:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+### Install with uv
+
+Install the package directly from GitHub:
 
 ```bash
 pip install uv
 uv pip install git+https://github.com/romanroman008/ingredient_regex_engine.git
 ```
 
----
+For local development with uv:
 
-## 🧪 Tests
+```bash
+git clone https://github.com/romanroman008/ingredient_regex_engine.git
+cd ingredient_regex_engine
+uv sync --extra dev
+```
 
-Run default test suite (unit + integration):
+## 🧪Tests
+
+Install development dependencies first:
+
+```bash
+python -m pip install -e ".[dev]"
+```
+
+Run tests:
 
 ```bash
 pytest
 ```
+
+The default pytest configuration already runs coverage reporting.
+
+With uv:
+
+```bash
+uv run pytest
+```
+
 ---
+
 
 #  🛠️ Tech Stack
 
@@ -93,6 +122,7 @@ pytest
 - Pydantic v2 (data validation)
 - OpenAI Agents SDK (LLM / agent pipeline)
 - Morfeusz2 (Polish morphological analysis)
+- SQLAlchemy
 
 ---
 
